@@ -51,8 +51,7 @@ defmodule WPL.Validator.MixProject do
 
   defp deps do
     [
-      # JSON Schema validation lib — see Phase B.1 for selection
-      # {:ex_json_schema, "~> 0.10"},   # candidate; verify Draft 2020-12 support
+      {:ex_json_schema, "~> 0.11"},
       {:jason, "~> 1.4"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
