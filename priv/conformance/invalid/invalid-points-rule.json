@@ -1,0 +1,31 @@
+{
+  "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
+  "version": "1.0.0",
+  "plan": {
+    "id": "77777777-7777-4777-8777-777777777777",
+    "name": "Negative points",
+    "type": "workout",
+    "visibility": "private",
+    "metadata": {},
+    "goals": [],
+    "requirements": {},
+    "progress": {
+      "checkpoints": [],
+      "points_system": {
+        "enabled": true,
+        "rules": [
+          { "action": "complete_workout", "points": -10 }
+        ]
+      }
+    },
+    "phases": [
+      {
+        "id": "phase_1", "name": "P1", "order": 1,
+        "duration": { "value": 1, "unit": "weeks" },
+        "weeks": [
+          { "id": "week_1", "name": "Week 1", "order": 1, "days": [{ "id": "day_1", "day_of_week": 1, "name": "D1", "type": "rest" }] }
+        ]
+      }
+    ]
+  }
+}
