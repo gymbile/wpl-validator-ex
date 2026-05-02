@@ -21,3 +21,13 @@ wpl_validator-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# macOS
+.DS_Store
+
+# Editor / language server
+.elixir_ls/
+.elixir-tools/
+
+# Compiled beam files
+*.beam
