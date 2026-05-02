@@ -1,0 +1,40 @@
+name: Schema drift check
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve latest gymbile/wpl tag
+        id: tag
+        run: |
+          latest=$(git ls-remote --tags https://github.com/gymbile/wpl.git \
+                  | grep 'refs/tags/v' | grep -v '\^{}' \
+                  | sort -V | tail -1 | awk '{print $2}' | sed 's|refs/tags/||')
+          echo "latest=$latest" >> $GITHUB_OUTPUT
+      - name: Read vendored version
+        id: vendored
+        run: echo "version=$(cat priv/schema-version.txt)" >> $GITHUB_OUTPUT
+      - name: Diff schema
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/gymbile/wpl/${{ steps.tag.outputs.latest }}/schema/v1.schema.json" -o /tmp/upstream-schema.json
+          if ! diff -q priv/schema/v1.schema.json /tmp/upstream-schema.json > /dev/null; then
+            echo "::error::Vendored schema drifted from gymbile/wpl@${{ steps.tag.outputs.latest }} (vendored: ${{ steps.vendored.outputs.version }})."
+            exit 1
+          fi
+      - name: Diff conformance
+        run: |
+          drifted=0
+          for f in $(find priv/conformance -type f \( -name '*.json' -o -name '*.md' \)); do
+            rel="${f#priv/conformance/}"
+            if ! curl -sSfL "https://raw.githubusercontent.com/gymbile/wpl/${{ steps.tag.outputs.latest }}/conformance/$rel" | diff -q - "$f" > /dev/null 2>&1; then
+              echo "::warning::Conformance file drifted: $rel"
+              drifted=1
+            fi
+          done
+          [ "$drifted" = 1 ] && exit 1 || exit 0
