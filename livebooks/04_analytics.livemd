@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Plan Analytics — Volume & Intensity
+# Plan Analytics — Volume, Intensity & Muscle-Group Coverage
 
 ```elixir
 Mix.install([
@@ -13,14 +13,102 @@ Mix.install([
 
 ## Goal
 
-Load the canonical `multi-phase-progression.json` (a 3-phase 6-week
-strength block for back squat), validate it, then compute and visualize
-weekly **volume** (sets × reps) and **intensity** (% 1RM).
+Load the canonical `muscle-tagged-workout.json` and `multi-phase-progression.json`,
+validate them, then compute and visualize:
 
-This shows the kind of read-after-validate analytics tooling a coach app or
-tracker would build on top of WPL.
+1. **Weekly volume per muscle group** — Schoenfeld-style sets/muscle/week
+   tracking, the analytics gap that motivated the v1.3.0 schema additions.
+2. **Weekly volume + intensity progression** across phases, with deload
+   weeks called out via `Week.is_deload`.
 
-## Load and validate
+This is the kind of read-after-validate tooling a coach app or tracker
+would build on top of WPL.
+
+## Sets per muscle group (schema v1.3.0+)
+
+Before muscle-group taxonomy was in the schema, computing weekly sets
+per muscle required an out-of-band exercise→muscle map maintained by
+every consuming tool. With v1.3.0 the `primary_muscles` and
+`secondary_muscles` arrays live on the activity itself.
+
+```elixir
+muscle_doc =
+  Path.join([__DIR__, "..", "priv", "conformance", "valid", "muscle-tagged-workout.json"])
+  |> File.read!()
+  |> Jason.decode!()
+
+muscle_result = WPL.Validator.validate(muscle_doc)
+muscle_result.valid?
+```
+
+```elixir
+defmodule MuscleVolume do
+  @doc """
+  For each `sets_reps` exercise activity, attribute its sets to every
+  primary muscle (full count) and every secondary muscle (half count, a
+  common volume-tracking convention used by Helms / Schoenfeld-style
+  hypertrophy programming).
+
+  Returns a sorted list of `{muscle, sets}` rows.
+  """
+  def per_muscle_sets(doc) do
+    plan = doc["plan"]
+
+    plan["phases"]
+    |> List.wrap()
+    |> Enum.flat_map(fn phase ->
+      phase["weeks"]
+      |> List.wrap()
+      |> Enum.flat_map(fn week ->
+        week["days"]
+        |> List.wrap()
+        |> Enum.flat_map(fn day ->
+          day["blocks"]
+          |> List.wrap()
+          |> Enum.flat_map(fn block ->
+            block["activities"]
+            |> List.wrap()
+            |> Enum.flat_map(&attribute/1)
+          end)
+        end)
+      end)
+    end)
+    |> Enum.reduce(%{}, fn {muscle, sets}, acc ->
+      Map.update(acc, muscle, sets, &(&1 + sets))
+    end)
+    |> Enum.sort_by(fn {_muscle, sets} -> -sets end)
+    |> Enum.map(fn {muscle, sets} -> %{muscle: muscle, sets: sets} end)
+  end
+
+  defp attribute(%{"type" => "exercise"} = a) do
+    sets = get_in(a, ["prescription", "sets"]) || 0
+    primary = a["primary_muscles"] || []
+    secondary = a["secondary_muscles"] || []
+
+    Enum.map(primary, &{&1, sets * 1.0}) ++
+      Enum.map(secondary, &{&1, sets * 0.5})
+  end
+
+  defp attribute(_), do: []
+end
+
+rows = MuscleVolume.per_muscle_sets(muscle_doc)
+Kino.DataTable.new(rows)
+```
+
+```elixir
+VegaLite.new(width: 600, height: 320, title: "Sets per muscle group (1.0× primary, 0.5× secondary)")
+|> VegaLite.data_from_values(rows)
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:y, "muscle", type: :nominal, sort: "-x", title: nil)
+|> VegaLite.encode_field(:x, "sets", type: :quantitative, title: "Sets")
+```
+
+This single-day fixture is small (one workout), but the same code runs
+on a full mesocycle and gives the coach a per-muscle weekly-volume
+chart with no exercise catalog lookup required.
+
+## Phase progression — load + validate
 
 ```elixir
 plan_path =

@@ -28,12 +28,27 @@ defmodule SetReps do
       "type" => "exercise",
       "exercise_ref" => "back_squat",
       "name" => "Back Squat",
+      # Schema v1.3.0+: muscle-group + movement-pattern tags. Lets a
+      # consuming app compute weekly volume per muscle group without an
+      # out-of-band exercise→muscle map.
+      "primary_muscles" => ["quadriceps", "glutes"],
+      "secondary_muscles" => ["hamstrings", "spinal_erectors"],
+      "movement_pattern" => "squat",
       "prescription" => %{
         "type" => "sets_reps",
         "sets" => sets,
         "reps" => normalize_reps(reps),
         "weight" => %{"type" => "percentage_1rm", "value" => pct, "unit" => "percent"},
-        "rest" => %{"value" => rest, "unit" => "seconds"}
+        "rest" => %{"value" => rest, "unit" => "seconds"},
+        # Schema v1.2.0+: structured Tempo. 3-1-X-0 = 3s eccentric, 1s
+        # pause, explosive concentric, 0s pause top.
+        "tempo" => %{
+          "eccentric" => 3,
+          "pause_bottom" => 1,
+          "concentric" => 0,
+          "pause_top" => 0,
+          "explosive_concentric" => true
+        }
       }
     }
   end
@@ -88,12 +103,17 @@ build_day = fn week_no, sets ->
 end
 
 build_week = fn week_no, sets ->
-  %{
+  base = %{
     "id" => "wk_#{week_no}",
     "name" => "Week #{week_no}",
     "order" => week_no,
     "days" => [build_day.(week_no, sets)]
   }
+
+  # Schema v1.2.0+: flag the deload week so downstream tools can render
+  # a "Deload" badge and analytics can drop volume from week-over-week
+  # progression curves.
+  if week_no == 4, do: Map.put(base, "is_deload", true), else: base
 end
 
 built_weeks = Enum.map(weeks, fn {n, sets} -> build_week.(n, sets) end)
@@ -130,6 +150,9 @@ plan = %{
       %{
         "id" => "phase_cycle_1",
         "name" => "Cycle 1",
+        # Schema v1.2.0+: periodization role lets a coach app surface
+        # "you're in an intensification cycle" without re-deriving it.
+        "type" => "intensification",
         "order" => 1,
         "duration" => %{"value" => 4, "unit" => "weeks"},
         "weeks" => built_weeks
@@ -178,3 +201,9 @@ Kino.Markdown.new("```json\n" <> json <> "\n```")
 * Add a phase with `duration: %{"value" => 3, "unit" => "weeks"}` but only
   one week in the array — see the `:phase_duration_mismatch` warning
   (note: warnings don't make the plan invalid).
+* Set `"sub_plan_ref" => "plan_531_squat_cycle"` on a sub-plan activity
+  inside this plan — `:cyclic_subplan` (self-cycle) fires.
+* Add `"athlete_thresholds" => %{"body_weight_kg" => 80, "one_rm" => [...]}`
+  at the plan level, then express the prescription weight as
+  `%{"type" => "percentage_1rm", "value" => 75}` — consumers can resolve
+  the absolute load downstream.

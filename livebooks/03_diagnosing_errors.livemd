@@ -163,6 +163,21 @@ Tour.load("phase-duration-mismatch.json") |> Tour.render()
 **Fix**: either bring the array length in line with `duration`, or remove
 the `duration` field entirely (it's optional).
 
+## `:cyclic_subplan` — sub-plan reference cycle (schema v1.5.0+)
+
+A `SubPlanActivity` whose `sub_plan_ref` points back to the containing
+plan's own `id` creates a self-cycle. Compiling such a plan would loop
+forever; the validator catches it before consumers do.
+
+```elixir
+Tour.load("cyclic-subplan-self.json") |> Tour.render()
+```
+
+**Fix**: change the `sub_plan_ref` to a different plan id, or remove the
+sub-plan activity entirely. Cross-plan cycles (`A → B → A`) require a
+future `sub_plans` resolution map at validate time and are not yet
+detected by single-plan validation.
+
 ## Summary
 
 * **Pass 1 errors** (`:schema_violation`) shadow Pass 2 — fix them first.
