@@ -45,7 +45,10 @@ defmodule WPL.Validator.Pass1 do
   # WPL conformance contract requires the parent path (`/plan`) with the offending
   # property name carried in `meta.params.additional_property`, matching ajv's
   # `instancePath` + `params` shape.
-  defp to_validation_error(%SchemaError{error: %SchemaError.AdditionalProperties{} = sub_error, path: path}) do
+  defp to_validation_error(%SchemaError{
+         error: %SchemaError.AdditionalProperties{} = sub_error,
+         path: path
+       }) do
     json_pointer = String.replace_prefix(path, "#", "")
     {parent, prop} = split_last_pointer_segment(json_pointer)
 
