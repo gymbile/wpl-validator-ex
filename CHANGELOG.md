@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-05-03
+
+### Changed
+- Sync vendored schema + conformance suite from `gymbile/wpl@v1.4.0` (was `v1.3.0`).
+
+### Notes
+Schema v1.4.0 adds per-bodyweight scaling for macros/calories/load and documented controlled-vocabulary prefixes for telemetry sources and clinical contraindications. All additive. 41/41 conformance + full validator suite pass.
+
 ## [1.2.0] — 2026-05-03
 
 ### Fixed
