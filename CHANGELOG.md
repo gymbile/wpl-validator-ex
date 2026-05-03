@@ -7,6 +7,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-05-03
+
+### Fixed
+- Pass 1 now drills into the best-matching branch for `oneOf` schema failures, matching ajv's native behavior. Previously, an invalid inner field on (e.g.) an `ExerciseActivity` produced a generic `oneOf` error at the activity level instead of the specific (e.g. `enum`) error at the offending field. Surfaced by the round-3 `bad-muscle-group` conformance fixture; codified in `error-codes.md`.
+
+### Changed
+- Sync vendored schema + conformance suite from `gymbile/wpl@v1.3.0` (was `v1.2.0`).
+
+### Notes
+Schema v1.3.0 adds optional `primary_muscles`/`secondary_muscles`/`movement_pattern` on `ExerciseActivity`, plan-level `athlete_thresholds`, and `intensity.zone_model` on cardio. 94/94 tests pass.
+
 ## [1.1.0] — 2026-05-03
 
 ### Changed

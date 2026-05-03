@@ -32,9 +32,24 @@ defmodule WPL.Validator.Pass1 do
         []
 
       {:error, errors} ->
-        Enum.map(errors, &to_validation_error/1)
+        Enum.flat_map(errors, &expand_to_validation_errors/1)
     end
   end
+
+  # OneOf: drill into the branch that "best matches" (fewest inner errors),
+  # surfacing the deepest-specific error in that branch instead of a bare
+  # oneOf failure at the parent. Matches ajv's behavior with discriminated
+  # unions, so cross-validator paths agree for invalid fixtures whose target
+  # field lives inside a oneOf-typed schema (e.g. Activity).
+  defp expand_to_validation_errors(%SchemaError{error: %SchemaError.OneOf{invalid: invalid}})
+       when is_list(invalid) and invalid != [] do
+    invalid
+    |> Enum.min_by(fn %{errors: errs} -> length(errs) end)
+    |> Map.get(:errors)
+    |> Enum.flat_map(&expand_to_validation_errors/1)
+  end
+
+  defp expand_to_validation_errors(%SchemaError{} = err), do: [to_validation_error(err)]
 
   # ex_json_schema returns structured %ExJsonSchema.Validator.Error{error: sub_error, path: path}
   # when error_formatter: false. The path is of the form "#/plan/type"; strip the leading "#"
