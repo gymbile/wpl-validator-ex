@@ -39,6 +39,28 @@ defmodule WPL.Validator.Pass1 do
   # ex_json_schema returns structured %ExJsonSchema.Validator.Error{error: sub_error, path: path}
   # when error_formatter: false. The path is of the form "#/plan/type"; strip the leading "#"
   # to produce a valid RFC 6901 JSON Pointer (e.g. "/plan/type") or "" for the root.
+  #
+  # AdditionalProperties is special-cased for cross-validator parity: ex_json_schema
+  # reports the path of the offending property (`/plan/secret_field`), but the
+  # WPL conformance contract requires the parent path (`/plan`) with the offending
+  # property name carried in `meta.params.additional_property`, matching ajv's
+  # `instancePath` + `params` shape.
+  defp to_validation_error(%SchemaError{error: %SchemaError.AdditionalProperties{} = sub_error, path: path}) do
+    json_pointer = String.replace_prefix(path, "#", "")
+    {parent, prop} = split_last_pointer_segment(json_pointer)
+
+    %Error{
+      path: parent,
+      code: :schema_violation,
+      message: to_string(sub_error),
+      severity: :error,
+      meta: %{
+        keyword: "additionalProperties",
+        params: %{additional_property: prop}
+      }
+    }
+  end
+
   defp to_validation_error(%SchemaError{error: sub_error, path: path}) do
     json_pointer = String.replace_prefix(path, "#", "")
 
@@ -49,6 +71,20 @@ defmodule WPL.Validator.Pass1 do
       severity: :error,
       meta: %{keyword: keyword_for(sub_error)}
     }
+  end
+
+  # Split "/plan/secret_field" → {"/plan", "secret_field"}. Root path "" stays {"", ""}.
+  defp split_last_pointer_segment(""), do: {"", ""}
+
+  defp split_last_pointer_segment(pointer) do
+    case String.split(pointer, "/") do
+      ["", _ | _] = parts ->
+        {last, leading} = List.pop_at(parts, -1)
+        {Enum.join(leading, "/"), last}
+
+      _ ->
+        {pointer, ""}
+    end
   end
 
   # Map structured error sub-types to JSON Schema keyword names, matching
