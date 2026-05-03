@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-05-03
+
+### Changed
+- Sync vendored schema + conformance suite from `gymbile/wpl@v1.2.0` (was `v1.1.1`).
+
+### Notes
+Schema v1.2.0 is purely additive: `Phase.type` enum, `Week.is_deload` boolean, and a structured `Tempo` shape (alongside the existing string form). No new validator rules; Pass 1 (schema validation) covers all three additions. Plans authored against v1.1.x continue to validate unchanged.
+
 ## [1.0.0] — 2026-05-02
 
 ### Added
