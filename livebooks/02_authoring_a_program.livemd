@@ -201,8 +201,6 @@ Kino.Markdown.new("```json\n" <> json <> "\n```")
 * Add a phase with `duration: %{"value" => 3, "unit" => "weeks"}` but only
   one week in the array — see the `:phase_duration_mismatch` warning
   (note: warnings don't make the plan invalid).
-* Set `"sub_plan_ref" => "plan_531_squat_cycle"` on a sub-plan activity
-  inside this plan — `:cyclic_subplan` (self-cycle) fires.
 * Add `"athlete_thresholds" => %{"body_weight_kg" => 80, "one_rm" => [...]}`
   at the plan level, then express the prescription weight as
   `%{"type" => "percentage_1rm", "value" => 75}` — consumers can resolve

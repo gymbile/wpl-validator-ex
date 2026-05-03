@@ -163,7 +163,13 @@ Tour.load("phase-duration-mismatch.json") |> Tour.render()
 **Fix**: either bring the array length in line with `duration`, or remove
 the `duration` field entirely (it's optional).
 
-## `:cyclic_subplan` — sub-plan reference cycle (schema v1.5.0+)
+## `:cyclic_subplan` — sub-plan reference cycle (preview, schema v1.5.0+)
+
+> **Preview feature.** `SubPlanActivity` is reserved schema surface for
+> a future plan-marketplace / library-composition use case. Most plans
+> should _not_ use it — express composition by inlining content. The
+> validator rule below exists so the surface is not foot-gun-prone if
+> you do choose to use it.
 
 A `SubPlanActivity` whose `sub_plan_ref` points back to the containing
 plan's own `id` creates a self-cycle. Compiling such a plan would loop
