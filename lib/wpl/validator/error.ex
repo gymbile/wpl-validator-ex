@@ -19,6 +19,7 @@ defmodule WPL.Validator.Error do
           | :invalid_personalization_rule
           | :invalid_points_rule
           | :phase_duration_mismatch
+          | :cyclic_subplan
 
   @type severity :: :error | :warning
 

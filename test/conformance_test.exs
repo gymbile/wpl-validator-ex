@@ -138,6 +138,7 @@ defmodule WPL.ConformanceTest do
   defp code_string_to_atom("INVALID_PERSONALIZATION_RULE"), do: :invalid_personalization_rule
   defp code_string_to_atom("INVALID_POINTS_RULE"), do: :invalid_points_rule
   defp code_string_to_atom("PHASE_DURATION_MISMATCH"), do: :phase_duration_mismatch
+  defp code_string_to_atom("CYCLIC_SUBPLAN"), do: :cyclic_subplan
 
   defp describe_mismatch(result, expected_errors) do
     """

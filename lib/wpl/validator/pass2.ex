@@ -4,6 +4,7 @@ defmodule WPL.Validator.Pass2 do
   alias WPL.Validator.WalkContext
 
   alias WPL.Validator.Rules.{
+    CyclicSubplan,
     DuplicateId,
     EmptyPhasesForType,
     InvalidPersonalizationRule,
@@ -14,6 +15,7 @@ defmodule WPL.Validator.Pass2 do
   }
 
   @rules [
+    CyclicSubplan,
     DuplicateId,
     EmptyPhasesForType,
     InvalidPersonalizationRule,
