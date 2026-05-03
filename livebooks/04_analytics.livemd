@@ -1,0 +1,162 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Plan Analytics — Volume & Intensity
+
+```elixir
+Mix.install([
+  {:wpl_validator, path: Path.join(__DIR__, "..")},
+  {:jason, "~> 1.4"},
+  {:kino, "~> 0.13"},
+  {:kino_vega_lite, "~> 0.1"}
+])
+```
+
+## Goal
+
+Load the canonical `multi-phase-progression.json` (a 3-phase 6-week
+strength block for back squat), validate it, then compute and visualize
+weekly **volume** (sets × reps) and **intensity** (% 1RM).
+
+This shows the kind of read-after-validate analytics tooling a coach app or
+tracker would build on top of WPL.
+
+## Load and validate
+
+```elixir
+plan_path =
+  Path.join([
+    __DIR__,
+    "..",
+    "priv",
+    "conformance",
+    "valid",
+    "multi-phase-progression.json"
+  ])
+
+doc = plan_path |> File.read!() |> Jason.decode!()
+result = WPL.Validator.validate(doc)
+result.valid?
+```
+
+## Walk the plan
+
+Plans are nested deeply (plan → phases → weeks → days → blocks →
+activities). Here's a tiny walker that flattens the tree into one row per
+exercise set, ready for analytics.
+
+```elixir
+defmodule Walk do
+  @doc """
+  Flatten the plan tree to one row per `sets_reps` exercise activity.
+  `global_week` is cumulative across phases (so a 2+2+2-week plan numbers
+  weeks 1..6, regardless of how many weeks each phase contains).
+  """
+  def to_set_rows(doc) do
+    phases = doc["plan"]["phases"] || []
+
+    {rows, _} =
+      Enum.flat_map_reduce(Enum.with_index(phases), 0, fn {phase, phase_idx}, weeks_so_far ->
+        weeks = phase["weeks"] || []
+
+        rows =
+          for {week, week_idx} <- Enum.with_index(weeks),
+              day <- week["days"] || [],
+              block <- day["blocks"] || [],
+              activity <- block["activities"] || [],
+              activity["type"] == "exercise",
+              prescription = activity["prescription"],
+              prescription["type"] == "sets_reps" do
+            %{
+              phase: phase["name"],
+              phase_order: phase_idx + 1,
+              week: week["name"],
+              global_week: weeks_so_far + week_idx + 1,
+              exercise: activity["exercise_ref"],
+              sets: prescription["sets"] || 1,
+              reps: reps_value(prescription["reps"]),
+              volume: (prescription["sets"] || 1) * reps_value(prescription["reps"]),
+              intensity_pct_1rm: get_in(prescription, ["weight", "value"])
+            }
+          end
+
+        {rows, weeks_so_far + length(weeks)}
+      end)
+
+    rows
+  end
+
+  # Treat any reps shape uniformly: prefer target, else midpoint of min/max.
+  defp reps_value(%{"target" => t}), do: t
+  defp reps_value(%{"min" => mn, "max" => mx}), do: div(mn + mx, 2)
+  defp reps_value(%{"min" => mn}), do: mn
+  defp reps_value(_), do: 1
+end
+
+rows = Walk.to_set_rows(doc)
+Kino.DataTable.new(rows)
+```
+
+## Aggregate by week
+
+```elixir
+weekly =
+  rows
+  |> Enum.group_by(& &1.global_week)
+  |> Enum.map(fn {wk, group} ->
+    sample = hd(group)
+    intensities = group |> Enum.map(& &1.intensity_pct_1rm) |> Enum.reject(&is_nil/1)
+
+    %{
+      week_no: wk,
+      phase: sample.phase,
+      label: "W#{wk} #{sample.phase}",
+      total_volume: Enum.sum(Enum.map(group, & &1.volume)),
+      avg_intensity:
+        if(intensities == [],
+          do: nil,
+          else: Float.round(Enum.sum(intensities) / length(intensities), 1)
+        )
+    }
+  end)
+  |> Enum.sort_by(& &1.week_no)
+
+Kino.DataTable.new(weekly)
+```
+
+## Volume chart
+
+Volume should taper into the deload week.
+
+```elixir
+VegaLite.new(width: 600, height: 240, title: "Weekly volume (sets × reps)")
+|> VegaLite.data_from_values(weekly, only: ["label", "total_volume", "phase"])
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:x, "label", type: :ordinal, sort: nil, title: "Week")
+|> VegaLite.encode_field(:y, "total_volume", type: :quantitative, title: "Volume (reps)")
+|> VegaLite.encode_field(:color, "phase", type: :nominal, title: "Phase")
+```
+
+## Intensity chart
+
+Intensity should climb from hypertrophy → strength → peak, then drop on
+deload.
+
+```elixir
+VegaLite.new(width: 600, height: 240, title: "Weekly average intensity (% 1RM)")
+|> VegaLite.data_from_values(weekly, only: ["label", "avg_intensity", "phase"])
+|> VegaLite.mark(:line, point: true)
+|> VegaLite.encode_field(:x, "label", type: :ordinal, sort: nil, title: "Week")
+|> VegaLite.encode_field(:y, "avg_intensity",
+  type: :quantitative,
+  title: "% 1RM",
+  scale: [domain: [50, 100]]
+)
+|> VegaLite.encode_field(:color, "phase", type: :nominal, title: "Phase")
+```
+
+## Try it on your own plan
+
+Replace the `plan_path` at the top with another fixture (e.g.
+`ppl-split.json`) or your own JSON. The walker only counts `sets_reps`
+exercise activities — extend it for cardio (`continuous`/`intervals`) or
+nutrition macros if your plan needs that.

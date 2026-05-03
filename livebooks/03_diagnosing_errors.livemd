@@ -1,0 +1,175 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Diagnosing Errors — A Tour
+
+```elixir
+Mix.install([
+  {:wpl_validator, path: Path.join(__DIR__, "..")},
+  {:jason, "~> 1.4"},
+  {:kino, "~> 0.13"}
+])
+```
+
+## Goal
+
+Walk through every error code WPL Validator can emit, see what triggers it,
+and how to fix it. Each section loads a real fixture from
+`priv/conformance/invalid/`, validates it, then shows a corrected version.
+
+```elixir
+defmodule Tour do
+  @conf Path.join([__DIR__, "..", "priv", "conformance", "invalid"])
+
+  def load(name) do
+    @conf |> Path.join(name) |> File.read!() |> Jason.decode!()
+  end
+
+  def validate(plan, opts \\ []) do
+    WPL.Validator.validate(plan, opts)
+  end
+
+  def render(plan, opts \\ []) do
+    result = validate(plan, opts)
+
+    rows =
+      Enum.map(result.errors, fn e ->
+        %{severity: e.severity, code: e.code, path: e.path, meta: inspect(e.meta)}
+      end)
+
+    Kino.Layout.grid(
+      [
+        Kino.Markdown.new(if(result.valid?, do: "**valid? true**", else: "**valid? false**")),
+        Kino.DataTable.new(rows)
+      ],
+      boxed: true
+    )
+  end
+end
+```
+
+## `:schema_violation` — Pass 1 stops everything
+
+When the JSON Schema rejects the document, Pass 2 (semantic checks) is
+skipped entirely. Fix schema violations first, then re-validate.
+
+```elixir
+Tour.load("schema-violation-bad-enum.json") |> Tour.render()
+```
+
+**Fix**: change `"type": "intergalactic_disco_party"` to one of the allowed
+plan types (`workout`, `nutrition`, `meditation`, `recovery`, `hybrid`).
+
+## `:duplicate_id` — sibling collision
+
+Within a scope (plan/phase/week/day), every `id` must be unique. The error
+points at the *second* occurrence and includes a `:first_occurrence` JSON
+Pointer.
+
+```elixir
+Tour.load("duplicate-day-id.json") |> Tour.render()
+```
+
+**Fix**: rename the offender. The walker tracks scopes hierarchically:
+- phase ids are scoped to `plan`
+- week ids are scoped to `phase:<phase_id>`
+- day ids are scoped to `week:<week_id>`
+- block & activity ids are scoped to `day:<day_id>` (so two activities can
+  share an id in *different* days).
+
+## `:unresolved_ref` — catalog-only check
+
+`exercise_ref` values must exist in the catalog you pass via the `catalog:`
+option. If you don't pass a catalog, this check is skipped entirely.
+
+```elixir
+plan = Tour.load("unresolved-exercise-ref.json")
+
+# Without catalog — no error
+Tour.render(plan)
+```
+
+```elixir
+# With catalog — surfaces the unknown ref
+Tour.render(plan, catalog: %{exercises: MapSet.new(["push_up", "squat"])})
+```
+
+**Fix**: add the missing exercise to your catalog, or change the
+`exercise_ref` to one that exists.
+
+## `:invalid_prescription` — sets_reps without sets or reps
+
+A `sets_reps` prescription needs at least one of `sets` or `reps` populated.
+
+```elixir
+Tour.load("invalid-prescription-sets-reps.json") |> Tour.render()
+```
+
+**Fix**: add `"sets": 3` or a `"reps": {"target": 10}` block.
+
+## `:invalid_personalization_rule` — unknown action type
+
+Personalization actions must use a known type. The full list:
+`modify_intensity, add_warmup_time, increase_rest, reduce_sets,
+reduce_reps, replace_exercise, exclude_exercise, modify_exercise,
+use_schedule, add_activity`.
+
+```elixir
+Tour.load("invalid-personalization-action.json") |> Tour.render()
+```
+
+**Fix**: replace `"set_world_on_fire"` with a known action type.
+
+## `:invalid_personalization_rule` — bad action scope
+
+Action scope must be one of: `activity, block, day, week, phase, plan`.
+
+```elixir
+Tour.load("invalid-personalization-bad-scope.json") |> Tour.render()
+```
+
+**Fix**: change `"scope": "galaxy"` to one of the allowed scopes.
+
+## `:invalid_points_rule` — negative points
+
+Points must be a non-negative integer.
+
+```elixir
+Tour.load("invalid-points-rule.json") |> Tour.render()
+```
+
+**Fix**: change `"points": -10` to a non-negative number.
+
+## `:empty_phases_for_type` — workout without phases
+
+Plans of type `workout` or `hybrid` need at least one phase.
+
+```elixir
+Tour.load("empty-phases-workout.json") |> Tour.render()
+```
+
+**Fix**: add a phase, or change the plan type to one that doesn't require
+phases (`nutrition`, `meditation`, `recovery`).
+
+## `:phase_duration_mismatch` — warning, not error
+
+If a phase declares `duration: 3 weeks` but the `weeks` array has 2 items,
+you get a *warning*. Warnings don't invalidate the plan but indicate likely
+authoring mistakes.
+
+```elixir
+Tour.load("phase-duration-mismatch.json") |> Tour.render()
+```
+
+**Fix**: either bring the array length in line with `duration`, or remove
+the `duration` field entirely (it's optional).
+
+## Summary
+
+* **Pass 1 errors** (`:schema_violation`) shadow Pass 2 — fix them first.
+* **Pass 2 errors** check things JSON Schema can't express:
+  cross-document uniqueness, ref resolution, semantic invariants.
+* **Warnings** (e.g., `:phase_duration_mismatch`) surface authoring
+  mistakes without invalidating the plan.
+
+For the canonical list and stability guarantees, see
+[`priv/conformance/error-codes.md`](../priv/conformance/error-codes.md).

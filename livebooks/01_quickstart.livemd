@@ -1,0 +1,111 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# WPL Validator — Quickstart
+
+```elixir
+Mix.install([
+  {:wpl_validator, path: Path.join(__DIR__, "..")},
+  {:jason, "~> 1.4"},
+  {:kino, "~> 0.13"}
+])
+```
+
+## What this notebook does
+
+Paste a WPL plan (JSON), run it through `WPL.Validator.validate/2`, and see
+the result inline. Use this as a sanity-check tool when authoring plans by
+hand or debugging compiler output.
+
+## Step 1 — paste a plan
+
+The default below is the canonical `simple-workout.json` from the
+conformance suite. Replace it with your own plan and re-run the next cell.
+
+```elixir
+default_plan =
+  Path.join([__DIR__, "..", "priv", "conformance", "valid", "simple-workout.json"])
+  |> File.read!()
+
+input = Kino.Input.textarea("WPL plan (JSON)", default: default_plan)
+```
+
+## Step 2 — validate
+
+```elixir
+json = Kino.Input.read(input)
+
+result =
+  case Jason.decode(json) do
+    {:ok, plan} ->
+      WPL.Validator.validate(plan)
+
+    {:error, %Jason.DecodeError{} = e} ->
+      %{parse_error: Exception.message(e)}
+  end
+```
+
+## Helpers
+
+```elixir
+defmodule Helpers do
+  def error_row(%WPL.Validator.Error{} = e) do
+    %{
+      severity: e.severity,
+      code: e.code,
+      path: if(e.path == "", do: "(root)", else: e.path),
+      message: e.message,
+      meta: inspect(e.meta, limit: :infinity)
+    }
+  end
+end
+```
+
+## Step 3 — render the outcome
+
+```elixir
+case result do
+  %{parse_error: msg} ->
+    Kino.Markdown.new("**Could not parse JSON:** `#{msg}`")
+
+  %WPL.Validator.Result{valid?: true, errors: []} ->
+    Kino.Markdown.new("✅ **Valid.** No findings.")
+
+  %WPL.Validator.Result{valid?: true, errors: warnings} ->
+    rows = Enum.map(warnings, &Helpers.error_row/1)
+
+    Kino.Layout.grid(
+      [
+        Kino.Markdown.new("✅ **Valid**, with #{length(warnings)} warning(s):"),
+        Kino.DataTable.new(rows)
+      ],
+      boxed: true
+    )
+
+  %WPL.Validator.Result{valid?: false, errors: errors} ->
+    rows = Enum.map(errors, &Helpers.error_row/1)
+
+    Kino.Layout.grid(
+      [
+        Kino.Markdown.new("❌ **Invalid.** #{length(errors)} finding(s):"),
+        Kino.DataTable.new(rows)
+      ],
+      boxed: true
+    )
+end
+```
+
+## Try it
+
+* Edit the textarea — change `"type": "workout"` to `"type": "wat"` and re-run.
+  You should see a `:schema_violation` with `keyword: enum`.
+* Add a duplicate `id` to two phases — you'll see `:duplicate_id` with
+  `scope: "plan"`.
+* Provide a catalog by changing the validate call:
+
+  ```elixir
+  WPL.Validator.validate(plan,
+    catalog: %{exercises: MapSet.new(["push_up", "dumbbell_row"])}
+  )
+  ```
+
+  Then `exercise_ref` values not in the set will surface as `:unresolved_ref`.

@@ -1,0 +1,180 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Authoring a 5/3/1 Cycle, Programmatically
+
+```elixir
+Mix.install([
+  {:wpl_validator, path: Path.join(__DIR__, "..")},
+  {:jason, "~> 1.4"},
+  {:kino, "~> 0.13"}
+])
+```
+
+## Goal
+
+Build a Wendler 5/3/1 four-week cycle for the squat as a plain Elixir map,
+validate after each step, and serialize to JSON at the end. This is the
+shape your code generators / authoring tools should produce.
+
+## Building blocks
+
+```elixir
+defmodule SetReps do
+  @moduledoc "Helpers for assembling exercise prescriptions."
+
+  def squat(%{sets: sets, reps: reps, percent_1rm: pct, rest_s: rest}) do
+    %{
+      "id" => "ex_squat",
+      "type" => "exercise",
+      "exercise_ref" => "back_squat",
+      "name" => "Back Squat",
+      "prescription" => %{
+        "type" => "sets_reps",
+        "sets" => sets,
+        "reps" => normalize_reps(reps),
+        "weight" => %{"type" => "percentage_1rm", "value" => pct, "unit" => "percent"},
+        "rest" => %{"value" => rest, "unit" => "seconds"}
+      }
+    }
+  end
+
+  defp normalize_reps(n) when is_integer(n), do: %{"target" => n}
+  defp normalize_reps({min, max}), do: %{"min" => min, "max" => max}
+  defp normalize_reps(:amrap_5), do: %{"min" => 5}
+end
+```
+
+## Week templates
+
+5/3/1 weeks (top set only — accessories omitted to keep this readable):
+
+* W1 — 5/5/5+ at 65/75/85% 1RM
+* W2 — 3/3/3+ at 70/80/90% 1RM
+* W3 — 5/3/1+ at 75/85/95% 1RM
+* W4 — deload 5/5/5 at 40/50/60% 1RM
+
+```elixir
+weeks = [
+  {1, [{5, 65}, {5, 75}, {:amrap_5, 85}]},
+  {2, [{3, 70}, {3, 80}, {:amrap_5, 90}]},
+  {3, [{5, 75}, {3, 85}, {1, 95}]},
+  {4, [{5, 40}, {5, 50}, {5, 60}]}
+]
+
+build_day = fn week_no, sets ->
+  activities =
+    sets
+    |> Enum.with_index(1)
+    |> Enum.map(fn {{reps, pct}, i} ->
+      SetReps.squat(%{sets: 1, reps: reps, percent_1rm: pct, rest_s: 180})
+      |> Map.put("id", "ex_squat_set_#{i}")
+    end)
+
+  %{
+    "id" => "d_squat_w#{week_no}",
+    "day_of_week" => 1,
+    "name" => "Squat — Week #{week_no}",
+    "type" => "training",
+    "blocks" => [
+      %{
+        "id" => "main",
+        "type" => "main",
+        "order" => 1,
+        "structure" => "straight_sets",
+        "activities" => activities
+      }
+    ]
+  }
+end
+
+build_week = fn week_no, sets ->
+  %{
+    "id" => "wk_#{week_no}",
+    "name" => "Week #{week_no}",
+    "order" => week_no,
+    "days" => [build_day.(week_no, sets)]
+  }
+end
+
+built_weeks = Enum.map(weeks, fn {n, sets} -> build_week.(n, sets) end)
+length(built_weeks)
+```
+
+## Assemble the plan
+
+```elixir
+plan = %{
+  "$schema" => "https://wpl.dev/schemas/wpl/v1.schema.json",
+  "version" => "1.0.0",
+  "plan" => %{
+    "id" => "plan_531_squat_cycle",
+    "name" => "5/3/1 Squat — 4 Week Cycle",
+    "description" => "Wendler 5/3/1 main lift cycle for back squat.",
+    "type" => "workout",
+    "visibility" => "private",
+    "metadata" => %{
+      "tags" => ["531", "strength", "squat"],
+      "difficulty" => "intermediate",
+      "estimated_duration_days" => 28,
+      "language" => "en"
+    },
+    "goals" => [
+      %{
+        "id" => "goal_531",
+        "type" => "primary",
+        "category" => "strength",
+        "name" => "Increase squat 1RM"
+      }
+    ],
+    "phases" => [
+      %{
+        "id" => "phase_cycle_1",
+        "name" => "Cycle 1",
+        "order" => 1,
+        "duration" => %{"value" => 4, "unit" => "weeks"},
+        "weeks" => built_weeks
+      }
+    ]
+  }
+}
+
+:assembled
+```
+
+## Validate
+
+```elixir
+result = WPL.Validator.validate(plan)
+```
+
+```elixir
+case result do
+  %WPL.Validator.Result{valid?: true, errors: []} ->
+    Kino.Markdown.new("✅ **Plan is valid** — ready to compile/serialize.")
+
+  %WPL.Validator.Result{errors: errors} ->
+    rows =
+      Enum.map(errors, fn e ->
+        %{severity: e.severity, code: e.code, path: e.path, message: e.message}
+      end)
+
+    Kino.DataTable.new(rows)
+end
+```
+
+## Serialize to JSON
+
+```elixir
+json = Jason.encode!(plan, pretty: true)
+Kino.Markdown.new("```json\n" <> json <> "\n```")
+```
+
+## What to try next
+
+* Change a percentage to a string (`"85"`) and re-run — observe a
+  `:schema_violation` with `keyword: type`.
+* Duplicate an `id` between two activities and watch a `:duplicate_id`
+  error pop up at `scope: "day:..."`.
+* Add a phase with `duration: %{"value" => 3, "unit" => "weeks"}` but only
+  one week in the array — see the `:phase_duration_mismatch` warning
+  (note: warnings don't make the plan invalid).
