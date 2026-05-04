@@ -1,6 +1,6 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "plan": {
     "id": "99999999-9999-4999-8999-999999999999",
     "name": "Unknown exercise ref",

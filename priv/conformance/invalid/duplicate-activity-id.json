@@ -1,6 +1,6 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "plan": {
     "id": "ffffffff-ffff-4fff-8fff-ffffffffffff",
     "name": "Duplicate Activity ID",

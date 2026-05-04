@@ -1,6 +1,6 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "plan": {
     "id": "30303030-3030-4303-8303-303030303030",
     "name": "Two genuine pass-2 errors",

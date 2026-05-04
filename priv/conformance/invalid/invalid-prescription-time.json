@@ -1,6 +1,6 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "plan": {
     "id": "55555555-5555-4555-8555-555555555555",
     "name": "time prescription without duration",

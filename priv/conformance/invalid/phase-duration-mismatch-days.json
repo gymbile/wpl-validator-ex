@@ -1,6 +1,6 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.0.0",
+  "version": "1.6.0",
   "plan": {
     "id": "20202020-2020-4202-8202-202020202020",
     "name": "Duration says 21 days, array has 1 week",

@@ -2,8 +2,8 @@
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
   "version": "1.6.0",
   "plan": {
-    "id": "40404040-4040-4404-8404-404040404040",
-    "name": "Bad muscle group",
+    "id": "bad-weight-metric-plan",
+    "name": "Bad Weight.metric value",
     "type": "workout",
     "visibility": "private",
     "metadata": {},
@@ -24,9 +24,13 @@
                       {
                         "id": "ex_1",
                         "type": "exercise",
-                        "exercise_ref": "push_up",
-                        "primary_muscles": ["pectoralis_galaxica"],
-                        "prescription": { "type": "sets_reps", "sets": 3, "reps": { "target": 10 } }
+                        "exercise_ref": "bench_press",
+                        "prescription": {
+                          "type": "sets_reps",
+                          "sets": 3,
+                          "reps": { "target": 5 },
+                          "weight": { "type": "percentage_1rm", "value": 85, "unit": "%", "metric": "5RM" }
+                        }
                       }
                     ]
                   }

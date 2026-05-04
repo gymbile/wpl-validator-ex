@@ -20,7 +20,7 @@ defmodule WPL.ValidatorTest do
   defp minimal_plan do
     %{
       "$schema" => "https://wpl.dev/schemas/wpl/v1.schema.json",
-      "version" => "1.0.0",
+      "version" => "1.6.0",
       "plan" => %{
         "id" => "plan_test",
         "name" => "Test",

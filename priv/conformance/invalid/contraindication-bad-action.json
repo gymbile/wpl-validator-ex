@@ -2,16 +2,23 @@
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
   "version": "1.6.0",
   "plan": {
-    "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-    "name": "Wrong-type metadata",
+    "id": "bad-action-plan",
+    "name": "Bad contraindication action",
     "type": "workout",
     "visibility": "private",
-    "metadata": "not-an-object",
+    "metadata": {},
     "goals": [],
+    "requirements": {
+      "contraindications": [
+        {
+          "condition": "lower_back_injury",
+          "action": "warn"
+        }
+      ]
+    },
     "phases": [
       {
         "id": "phase_1", "name": "P1", "order": 1,
-        "duration": { "value": 1, "unit": "weeks" },
         "weeks": [
           {
             "id": "week_1", "name": "Week 1", "order": 1,

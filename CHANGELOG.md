@@ -7,6 +7,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-05-04
+
+### Changed
+- Sync vendored schema + conformance suite from `gymbile/wpl@v1.6.0` (was `v1.5.0`).
+
+### Added
+- **Contraindication tightening.** Optional `severity` (`low | moderate | high`) and `action: "require_clearance"`.
+- **Cardio interval consistency.** `CardioPrescription.intervals.work.duration` / `.rest.duration` accept a full `Duration` object alongside bare seconds.
+- **Cardio intensity slots.** `intensity.target` gains typed slots (`zone`, `min_bpm`/`max_bpm`, `min_watts`/`max_watts`, `value`+`unit` for pace).
+- **Resistance extras.** `Reps.amrap: bool`, `ExercisePrescription.to_failure: bool`, `Weight.metric` enum (`1RM | e1RM | training_max | daily_max`).
+- **Typed progress measurements.** `Checkpoint.measurements[]` items accept a free string or a typed `MeasurementSpec` with `MeasurementMetric` enum and `Questionnaire` enum.
+- **Recovery typing.** `RecoveryExercise` gains `modality`, `intensity_rpe`, `pnf` block, and `body_part`.
+- 5 new valid conformance fixtures: `contraindication-clearance`, `cardio-intervals-duration`, `amrap-to-failure`, `checkpoint-typed-measurements`, `recovery-pnf-smr`.
+- 5 new invalid conformance fixtures: `contraindication-bad-severity`, `contraindication-bad-action`, `checkpoint-bad-metric`, `recovery-bad-modality`, `weight-bad-metric`.
+
+### Notes
+All schema changes are additive; every plan valid under 1.5.0 continues to validate under 1.6.0.
+
 ## [1.4.0] — 2026-05-03
 
 ### Added
