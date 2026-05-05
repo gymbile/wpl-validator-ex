@@ -5,9 +5,9 @@ defmodule WPL.Validator.Rules.ActivityBlockMismatch do
   alias WPL.Validator.{Error, WalkContext}
 
   @allowed %{
-    "warmup" => ~w(cardio recovery simple sub_plan),
+    "warmup" => ~w(exercise cardio recovery simple sub_plan),
     "main" => ~w(exercise cardio nutrition meditation recovery habit simple sub_plan),
-    "cooldown" => ~w(cardio recovery meditation simple sub_plan),
+    "cooldown" => ~w(exercise cardio recovery meditation simple sub_plan),
     "nutrition" => ~w(nutrition simple sub_plan),
     "meditation" => ~w(meditation simple sub_plan),
     "education" => ~w(simple habit sub_plan),

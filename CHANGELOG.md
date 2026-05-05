@@ -7,6 +7,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.6.6] — 2026-05-05
+
+### Changed
+
+- **ACTIVITY_BLOCK_MISMATCH allowed-activity table relaxed for warmup and cooldown** — `exercise` is now allowed in both `warmup` and `cooldown` blocks. Mirrors `@gymbile/wpl-validator@1.6.6`.
+
+### Removed
+
+- Conformance fixture `invalid/activity-block-mismatch-exercise-in-cooldown` (no longer a violation).
+
 ## [1.6.5] — 2026-05-04
 
 ### Added

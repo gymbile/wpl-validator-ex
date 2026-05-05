@@ -55,8 +55,8 @@ defmodule WPL.Validator.Rules.ActivityBlockMismatchTest do
   describe "ActivityBlockMismatch" do
     # --- violation cases ---
 
-    test "emits error for exercise in cooldown block" do
-      errors = run("cooldown", "exercise")
+    test "emits error for nutrition in cooldown block" do
+      errors = run("cooldown", "nutrition")
       assert length(errors) == 1
       [err] = errors
 
@@ -66,10 +66,10 @@ defmodule WPL.Validator.Rules.ActivityBlockMismatchTest do
                severity: :error
              } = err
 
-      assert err.meta.activity_type == "exercise"
+      assert err.meta.activity_type == "nutrition"
       assert err.meta.block_type == "cooldown"
-      assert "exercise" not in err.meta.allowed
-      assert String.contains?(err.message, "'exercise'")
+      assert "nutrition" not in err.meta.allowed
+      assert String.contains?(err.message, "'nutrition'")
       assert String.contains?(err.message, "'cooldown'")
     end
 
