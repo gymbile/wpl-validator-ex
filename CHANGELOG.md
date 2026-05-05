@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.6.5] — 2026-05-04
+
+### Added
+- Pass-2 rule `:activity_block_mismatch` rejects activities whose `type` is not allowed in the parent block's `type` (e.g. `exercise` in a `cooldown` block). `:activity_block_mismatch` added to `WPL.Validator.Error.code` typespec. See `conformance/error-codes.md` for the full allowed-activity table.
+
 ## [1.6.0] — 2026-05-04
 
 ### Changed

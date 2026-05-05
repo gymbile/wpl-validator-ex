@@ -20,6 +20,7 @@ defmodule WPL.Validator.Error do
           | :invalid_points_rule
           | :phase_duration_mismatch
           | :cyclic_subplan
+          | :activity_block_mismatch
 
   @type severity :: :error | :warning
 
