@@ -182,5 +182,19 @@ defmodule WPL.Validator.Rules.ActivityBlockMismatchTest do
     test "does not emit for unknown block type" do
       assert run("custom_block", "exercise") == []
     end
+
+    # --- repair_hint (1.7.0) ---
+
+    test "attaches repair_hint with action=:fix_activity and allowed_values" do
+      [err] = run("warmup", "nutrition")
+      hint = err.repair_hint
+      assert hint != nil
+      assert hint.action == :fix_activity
+      assert hint.target_path == "/plan/phases/0/weeks/0/days/0/blocks/0/activities/0"
+      assert "cardio" in hint.allowed_values
+      assert "recovery" in hint.allowed_values
+      refute "nutrition" in hint.allowed_values
+      assert hint.expected_shape =~ "warmup"
+    end
   end
 end

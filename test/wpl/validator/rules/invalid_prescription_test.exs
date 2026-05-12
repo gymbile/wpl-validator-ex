@@ -24,13 +24,20 @@ defmodule WPL.Validator.Rules.InvalidPrescriptionTest do
       errors = run_on_activity(activity)
       assert length(errors) == 1
 
-      assert hd(errors) == %Error{
-               path: presc_path(),
+      err = hd(errors)
+      assert %Error{
+               path: _,
                code: :invalid_prescription,
                message: "sets_reps prescription requires 'sets' or 'reps'",
                severity: :error,
                meta: %{reason: :sets_reps_requires_sets_or_reps}
-             }
+             } = err
+
+      assert err.path == presc_path()
+      # repair_hint (1.7.0)
+      assert err.repair_hint.action == :fix_prescription
+      assert err.repair_hint.missing == ["sets", "reps"]
+      assert err.repair_hint.expected_shape =~ "sets_reps"
     end
 
     test "flags time prescription without duration" do

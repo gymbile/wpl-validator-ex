@@ -27,13 +27,23 @@ defmodule WPL.Validator.Rules.EmptyPhasesForTypeTest do
       errors = run(plan)
       assert length(errors) == 1
 
-      assert hd(errors) == %Error{
+      err = hd(errors)
+      assert %Error{
                path: "/plan/phases",
                code: :empty_phases_for_type,
                message: "Plan type 'workout' requires at least one phase",
                severity: :error,
                meta: %{plan_type: "workout"}
-             }
+             } = err
+
+      # repair_hint (1.7.0)
+      assert err.repair_hint != nil
+      assert err.repair_hint.action == :add_phases
+      assert err.repair_hint.target_path == "/plan/phases"
+      assert err.repair_hint.expected_count == 1
+      assert err.repair_hint.actual_count == 0
+      assert err.repair_hint.expected_shape =~ "workout"
+      assert err.repair_hint.context_dsl_example =~ "PHASE"
     end
 
     test "emits error for hybrid plan with zero phases" do
