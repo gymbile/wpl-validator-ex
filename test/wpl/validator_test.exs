@@ -15,6 +15,35 @@ defmodule WPL.ValidatorTest do
       assert %Result{valid?: false, errors: errors} = result
       assert Enum.any?(errors, &(&1.code == :schema_violation))
     end
+
+    test "repair_hints/1 surfaces the hint from :phase_duration_mismatch" do
+      plan = put_in(minimal_plan(), ["plan", "phases"], [
+        %{
+          "id" => "phase_1",
+          "name" => "Phase 1: Foundation",
+          "order" => 1,
+          "duration" => %{"value" => 4, "unit" => "weeks"},
+          "weeks" => [
+            %{
+              "id" => "week_1",
+              "name" => "W1",
+              "order" => 1,
+              "days" => [%{"id" => "day_1", "day_of_week" => 1, "type" => "rest"}]
+            }
+          ]
+        }
+      ])
+
+      result = Validator.validate(plan)
+      hints = Validator.repair_hints(result)
+      assert length(hints) >= 1
+
+      phase_hint = Enum.find(hints, &(&1.code == :phase_duration_mismatch))
+      assert phase_hint != nil
+      assert phase_hint.hint.action == :add_weeks
+      assert phase_hint.hint.parent_name == "Phase 1: Foundation"
+      assert phase_hint.hint.missing == [2, 3, 4]
+    end
   end
 
   defp minimal_plan do

@@ -42,4 +42,19 @@ defmodule WPL.Validator do
       %Result{valid?: false, errors: pass1_errors}
     end
   end
+
+  @doc """
+  Convenience: pull every actionable `repair_hint` out of a Result.
+
+  Designed for agentic completion loops — the orchestrator gets a flat
+  list of repair actions without having to inspect each error's optional
+  field. Errors without a hint (e.g. `:cyclic_subplan`) are skipped.
+  """
+  @spec repair_hints(Result.t()) ::
+          [%{code: atom(), path: String.t(), hint: WPL.Validator.RepairHint.t()}]
+  def repair_hints(%Result{errors: errors}) do
+    errors
+    |> Enum.filter(&(&1.repair_hint != nil))
+    |> Enum.map(fn e -> %{code: e.code, path: e.path, hint: e.repair_hint} end)
+  end
 end

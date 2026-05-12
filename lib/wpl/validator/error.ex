@@ -8,6 +8,8 @@ defmodule WPL.Validator.Error do
     * `:message` — human-readable description.
     * `:severity` — `:error` or `:warning`.
     * `:meta` — code-specific extra fields (map, may be empty).
+    * `:repair_hint` — optional structured guidance for agentic repair.
+      See `WPL.Validator.RepairHint` for the shape.
   """
 
   @type code ::
@@ -29,9 +31,10 @@ defmodule WPL.Validator.Error do
           code: code(),
           message: String.t(),
           severity: severity(),
-          meta: map()
+          meta: map(),
+          repair_hint: WPL.Validator.RepairHint.t() | nil
         }
 
   @enforce_keys [:path, :code, :message, :severity]
-  defstruct [:path, :code, :message, :severity, meta: %{}]
+  defstruct [:path, :code, :message, :severity, meta: %{}, repair_hint: nil]
 end
