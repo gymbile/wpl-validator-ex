@@ -1,12 +1,10 @@
 [
   {
-    "code": "INVALID_PERSONALIZATION_RULE",
-    "path": "/plan/personalization/rules/0/actions/0",
+    "code": "SCHEMA_VIOLATION",
+    "path": "/plan/personalization/rules/0/actions/0/type",
     "severity": "error",
     "meta": {
-      "reason": "invalid_action_type",
-      "field": "type",
-      "value": "set_world_on_fire"
+      "keyword": "enum"
     }
   }
 ]

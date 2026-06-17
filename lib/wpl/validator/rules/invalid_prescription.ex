@@ -8,18 +8,14 @@ defmodule WPL.Validator.Rules.InvalidPrescription do
   @valid_types MapSet.new(@valid_types_list)
 
   @shape_by_type %{
-    "sets_reps" =>
-      "{ type: \"sets_reps\", sets: <number>, reps: <number | { min, max }> }",
+    "sets_reps" => "{ type: \"sets_reps\", sets: <number>, reps: <number | { min, max }> }",
     "time" =>
       "{ type: \"time\", duration: { value: <number>, unit: \"seconds\" | \"minutes\" } }",
     "distance" =>
       "{ type: \"distance\", distance: { value: <number>, unit: \"meters\" | \"kilometers\" | \"miles\" } }",
-    "amrap" =>
-      "{ type: \"amrap\", duration: { value: <number>, unit: \"minutes\" } }",
-    "continuous" =>
-      "{ type: \"continuous\", duration: { value: <number>, unit: \"minutes\" } }",
-    "intervals" =>
-      "{ type: \"intervals\", rounds: <number>, work: { ... }, rest: { ... } }"
+    "amrap" => "{ type: \"amrap\", duration: { value: <number>, unit: \"minutes\" } }",
+    "continuous" => "{ type: \"continuous\", duration: { value: <number>, unit: \"minutes\" } }",
+    "intervals" => "{ type: \"intervals\", rounds: <number>, work: { ... }, rest: { ... } }"
   }
 
   @impl true

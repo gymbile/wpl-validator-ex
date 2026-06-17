@@ -28,6 +28,7 @@ defmodule WPL.Validator.Rules.EmptyPhasesForTypeTest do
       assert length(errors) == 1
 
       err = hd(errors)
+
       assert %Error{
                path: "/plan/phases",
                code: :empty_phases_for_type,
