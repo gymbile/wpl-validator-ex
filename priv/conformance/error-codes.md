@@ -67,6 +67,18 @@ A `*_ref` value (e.g. `exercise_ref`, `meal_ref`) does not exist in the provided
   - `ref_kind` (string) — `exercise` | `meal` | `meditation` | etc.
   - `ref_value` (string) — the unresolvable id
 
+### `CATALOG_REQUIRED`
+
+Emitted only when `require_catalog: true` is passed to `validate/2` and no catalog
+is supplied, but an activity references a `*_ref` field. In non-strict mode (the
+default) a missing catalog silently skips ref resolution.
+
+- **severity**: `error`
+- **path**: pointer to the activity's `*_ref` field
+- **meta**:
+  - `ref_kind` (string) — `exercise` | `meal` | `meditation`
+  - `ref_value` (string) — the ref that could not be checked
+
 ### `CYCLIC_SUBPLAN`
 
 Sub-plan references form a cycle. Active as of schema v1.5.0 (`SubPlanActivity`).

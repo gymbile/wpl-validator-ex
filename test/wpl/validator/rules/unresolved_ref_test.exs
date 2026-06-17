@@ -100,5 +100,39 @@ defmodule WPL.Validator.Rules.UnresolvedRefTest do
       # nil catalog set means not found -> emit
       assert length(errors) == 1
     end
+
+    test "emits catalog_required when require_catalog: true and no catalog supplied" do
+      activity = %{
+        "type" => "exercise",
+        "exercise_ref" => "push_up"
+      }
+
+      errors = run_on_activity(activity, require_catalog: true)
+      assert length(errors) == 1
+      err = hd(errors)
+      assert err.code == :catalog_required
+      assert err.severity == :error
+      assert err.meta.ref_kind == "exercise"
+      assert err.meta.ref_value == "push_up"
+    end
+
+    test "does not emit catalog_required when require_catalog not set and no catalog" do
+      activity = %{"type" => "exercise", "exercise_ref" => "push_up"}
+      assert run_on_activity(activity) == []
+    end
+
+    test "resolves exercise_ref case-insensitively" do
+      activity = %{"type" => "exercise", "exercise_ref" => "Push_Up"}
+      catalog = %{exercises: MapSet.new(["push_up"])}
+      assert run_on_activity(activity, catalog: catalog) == []
+    end
+
+    test "flags ref whose lowercase form is absent from catalog" do
+      activity = %{"type" => "exercise", "exercise_ref" => "totally_unknown_exercise"}
+      catalog = %{exercises: MapSet.new(["push_up", "squat"])}
+      errors = run_on_activity(activity, catalog: catalog)
+      assert length(errors) == 1
+      assert hd(errors).code == :unresolved_ref
+    end
   end
 end
