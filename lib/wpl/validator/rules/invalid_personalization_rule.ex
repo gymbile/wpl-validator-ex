@@ -5,6 +5,7 @@ defmodule WPL.Validator.Rules.InvalidPersonalizationRule do
   alias WPL.Validator.{Error, WalkContext}
 
   @action_types MapSet.new([
+                  "forbid_exercise",
                   "modify_intensity",
                   "add_warmup_time",
                   "increase_rest",
