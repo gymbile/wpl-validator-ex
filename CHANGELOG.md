@@ -7,6 +7,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-06-17
+
+### Added
+- **Pass-3 enforcement engine**: `WPL.Enforce.enforce/3,4` evaluates personalization
+  rules against a `ClientContext` and strips forbidden activities from a compiled plan.
+  Exports: `WPL.Enforce`, `WPL.Enforce.Matcher`, `WPL.Enforce.RuleEvaluator`,
+  `WPL.Enforce.Cycle`. Fail-closed diagnostics: `UNKNOWN_CONDITION_FIELD`,
+  `UNKNOWN_ACTION_TYPE`.
+- Enforcement conformance fixtures (`priv/conformance/enforcement/`) — 6 cross-language
+  fixtures shared with `@gymbile/wpl-validator@1.8.0`.
+- `forbid_exercise` accepted by `WPL.Validator.Rules.InvalidPersonalizationRule`.
+- `in` / `not_in` condition ops tested (already pass; schema sync completes support).
+- Strict catalog mode: `validate(plan, require_catalog: true)` emits `:catalog_required`
+  instead of silently skipping entity resolution when no catalog is supplied.
+- `:catalog_required` added to `WPL.Validator.Error.@type code`.
+
+### Changed
+- Catalog ref resolution is now case-insensitive (lowercases both ref and catalog entries
+  before comparing). Mirrors `@gymbile/wpl-validator@1.8.0` `hasRef` behavior.
+- Vendored schema updated to WPL v1.7.0.
+
 ## [1.6.6] — 2026-05-05
 
 ### Changed
