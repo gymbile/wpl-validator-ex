@@ -1,0 +1,45 @@
+{
+  "description": "condition not met — no injuries present — forbid rule does not fire, both exercises survive",
+  "plan": {
+    "version": "1.7.0",
+    "plan": {
+      "phases": [
+        {
+          "weeks": [
+            {
+              "order": 1,
+              "days": [
+                {
+                  "day_of_week": 1,
+                  "blocks": [
+                    {
+                      "type": "main",
+                      "activities": [
+                        { "type": "exercise", "exercise_ref": "pistol_squat" },
+                        { "type": "exercise", "exercise_ref": "bench_press" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": { "injuries": [] },
+  "rules": [
+    {
+      "id": "forbid_pistol",
+      "condition": { "field": "injuries", "op": "contains", "value": "torn_meniscus" },
+      "actions": [{ "type": "forbid_exercise", "exercise": "pistol_squat" }]
+    }
+  ],
+  "options": {},
+  "expect": {
+    "stripped_exercises": [],
+    "surviving_refs": ["pistol_squat", "bench_press"],
+    "diagnostic_codes": []
+  }
+}

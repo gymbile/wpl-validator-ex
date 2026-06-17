@@ -1,0 +1,44 @@
+{
+  "description": "fuzzy name match: activity with free-text name collides with qualifier-trimmed forbid pattern",
+  "plan": {
+    "version": "1.7.0",
+    "plan": {
+      "phases": [
+        {
+          "weeks": [
+            {
+              "order": 1,
+              "days": [
+                {
+                  "day_of_week": 1,
+                  "blocks": [
+                    {
+                      "type": "main",
+                      "activities": [
+                        { "type": "exercise", "name": "Bulgarian Split Squats" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": { "injuries": ["knee_instability"] },
+  "rules": [
+    {
+      "id": "forbid_bulgarian_below_parallel",
+      "condition": { "field": "injuries", "op": "contains", "value": "knee_instability" },
+      "actions": [{ "type": "forbid_exercise", "exercise": "bulgarian_split_squat_below_parallel" }]
+    }
+  ],
+  "options": {},
+  "expect": {
+    "stripped_exercises": ["Bulgarian Split Squats"],
+    "surviving_refs": [],
+    "diagnostic_codes": []
+  }
+}
