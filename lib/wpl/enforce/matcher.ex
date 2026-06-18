@@ -25,7 +25,7 @@ defmodule WPL.Enforce.Matcher do
   # The <=3 length guard below normally protects short tokens; this map
   # overrides that guard so compound names like "push_ups" match "push_up".
   # "abs" is deliberately NOT here: it is a canonical muscle-group token.
-  @short_plurals %{"ups" => "up"}
+  @short_plurals WPL.Enforce.MatcherVocab.short_plurals()
 
   # Muscle-group and anatomical tokens that look like plurals but are canonical
   # singular forms. Checked before the trailing-s rule so they are never stemmed.
@@ -61,24 +61,7 @@ defmodule WPL.Enforce.Matcher do
     end
   end
 
-  @qualifier_tokens MapSet.new([
-                      "below",
-                      "above",
-                      "deep",
-                      "heavy",
-                      "light",
-                      "weighted",
-                      "loaded",
-                      "max",
-                      "maximal",
-                      "parallel",
-                      "bodyweight",
-                      "kg",
-                      "lbs",
-                      "rom",
-                      "anything",
-                      "any"
-                    ])
+  @qualifier_tokens MapSet.new(WPL.Enforce.MatcherVocab.qualifier_tokens())
 
   defp core_tokens(blacklisted) do
     tokens =
