@@ -79,5 +79,22 @@ defmodule WPL.Enforce.MatcherTest do
     test "empty extracted string never collides" do
       refute Matcher.collides("", "push_up")
     end
+
+    # Guards that the generated qualifier vocab is wired into collides, not just
+    # present as data. "bodyweight" appears only because it is in the generated
+    # qualifier_tokens list. If it were removed from matcher-vocab.json / the
+    # generated file, core_tokens/1 would no longer truncate at the qualifier
+    # pivot, the core would include "bodyweight", and the assertions below would
+    # flip — proving the generated list actively drives collision behavior.
+    test "bodyweight qualifier: base name collides with blacklisted_bodyweight variant" do
+      # core_tokens("squat_bodyweight") == ["squat"] because "bodyweight" is a
+      # qualifier token; the pivot strips it. "squat" then matches the extracted name.
+      assert Matcher.collides("squat", "squat_bodyweight")
+    end
+
+    test "bodyweight qualifier: unrelated exercise does not collide with bodyweight variant" do
+      # Same core ["squat"]; "overhead_press" has no "squat" token, so no collision.
+      refute Matcher.collides("overhead press", "squat_bodyweight")
+    end
   end
 end
