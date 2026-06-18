@@ -1,0 +1,44 @@
+{
+  "description": "typo in condition field emits UNKNOWN_CONDITION_FIELD diagnostic; exercise is NOT stripped (rule can never fire)",
+  "plan": {
+    "version": "1.7.0",
+    "plan": {
+      "phases": [
+        {
+          "weeks": [
+            {
+              "order": 1,
+              "days": [
+                {
+                  "day_of_week": 1,
+                  "blocks": [
+                    {
+                      "type": "main",
+                      "activities": [
+                        { "type": "exercise", "exercise_ref": "pistol_squat" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": { "injuries": ["torn_meniscus"] },
+  "rules": [
+    {
+      "id": "forbid_pistol_typo",
+      "condition": { "field": "injures", "op": "contains", "value": "torn_meniscus" },
+      "actions": [{ "type": "forbid_exercise", "exercise": "pistol_squat" }]
+    }
+  ],
+  "options": {},
+  "expect": {
+    "stripped_exercises": [],
+    "surviving_refs": ["pistol_squat"],
+    "diagnostic_codes": ["UNKNOWN_CONDITION_FIELD"]
+  }
+}

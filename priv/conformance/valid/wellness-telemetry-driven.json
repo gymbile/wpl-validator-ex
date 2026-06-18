@@ -34,7 +34,7 @@
             ]
           },
           "actions": [
-            { "type": "modify_intensity", "scope": "day", "delta_percent": -10 },
+            { "type": "modify_intensity", "scope": "day", "factor": 0.85 },
             { "type": "increase_rest", "scope": "day", "extra_seconds": 30 }
           ]
         },

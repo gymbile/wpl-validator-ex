@@ -17,22 +17,23 @@ defmodule WPL.ValidatorTest do
     end
 
     test "repair_hints/1 surfaces the hint from :phase_duration_mismatch" do
-      plan = put_in(minimal_plan(), ["plan", "phases"], [
-        %{
-          "id" => "phase_1",
-          "name" => "Phase 1: Foundation",
-          "order" => 1,
-          "duration" => %{"value" => 4, "unit" => "weeks"},
-          "weeks" => [
-            %{
-              "id" => "week_1",
-              "name" => "W1",
-              "order" => 1,
-              "days" => [%{"id" => "day_1", "day_of_week" => 1, "type" => "rest"}]
-            }
-          ]
-        }
-      ])
+      plan =
+        put_in(minimal_plan(), ["plan", "phases"], [
+          %{
+            "id" => "phase_1",
+            "name" => "Phase 1: Foundation",
+            "order" => 1,
+            "duration" => %{"value" => 4, "unit" => "weeks"},
+            "weeks" => [
+              %{
+                "id" => "week_1",
+                "name" => "W1",
+                "order" => 1,
+                "days" => [%{"id" => "day_1", "day_of_week" => 1, "type" => "rest"}]
+              }
+            ]
+          }
+        ])
 
       result = Validator.validate(plan)
       hints = Validator.repair_hints(result)

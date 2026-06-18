@@ -25,6 +25,7 @@ defmodule WPL.Validator.Rules.InvalidPrescriptionTest do
       assert length(errors) == 1
 
       err = hd(errors)
+
       assert %Error{
                path: _,
                code: :invalid_prescription,

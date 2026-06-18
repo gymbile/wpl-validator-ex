@@ -154,5 +154,37 @@ defmodule WPL.Validator.Rules.InvalidPersonalizationRuleTest do
 
       assert run_on_rule(rule) == []
     end
+
+    test "accepts forbid_exercise action type (was incorrectly rejected pre-1.8.0)" do
+      rule = %{
+        "id" => "forbid_high_impact",
+        "condition" => %{"field" => "injuries", "op" => "contains", "value" => "torn_meniscus"},
+        "actions" => [%{"type" => "forbid_exercise", "exercise" => "pistol_squat"}]
+      }
+
+      assert run_on_rule(rule) == []
+    end
+
+    test "accepts in and not_in ops in SimpleCondition without error" do
+      rule = %{
+        "id" => "cycle_window",
+        "condition" => %{"field" => "cycle_day", "op" => "in", "value" => [1, 2, 3]},
+        "actions" => [%{"type" => "forbid_exercise", "exercise" => "romanian_deadlift"}]
+      }
+
+      # Will fail until forbid_exercise is accepted; once V2 implement step runs,
+      # this test asserts the complete clean path.
+      assert run_on_rule(rule) == []
+    end
+
+    test "accepts not_in op in SimpleCondition without error" do
+      rule = %{
+        "id" => "not_in_test",
+        "condition" => %{"field" => "fatigue", "op" => "not_in", "value" => ["high", "extreme"]},
+        "actions" => [%{"type" => "reduce_reps", "scope" => "activity"}]
+      }
+
+      assert run_on_rule(rule) == []
+    end
   end
 end

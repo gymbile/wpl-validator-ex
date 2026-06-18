@@ -1,0 +1,51 @@
+{
+  "description": "cycle-day window forbid: week-1/day-1 lands on cycle day 1 (planStart=lastPeriodStart) → romanian_deadlift stripped",
+  "plan": {
+    "version": "1.7.0",
+    "plan": {
+      "phases": [
+        {
+          "weeks": [
+            {
+              "order": 1,
+              "days": [
+                {
+                  "day_of_week": 1,
+                  "blocks": [
+                    {
+                      "type": "main",
+                      "activities": [
+                        { "type": "exercise", "exercise_ref": "romanian_deadlift" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": {
+    "cycle": {
+      "last_period_start": "2026-01-05",
+      "length_days": 28,
+      "flow_days": 3,
+      "pattern": "regular"
+    }
+  },
+  "rules": [
+    {
+      "id": "forbid_rdl_flow_window",
+      "condition": { "field": "cycle_day", "op": "in", "value": [1, 2, 3] },
+      "actions": [{ "type": "forbid_exercise", "exercise": "romanian_deadlift" }]
+    }
+  ],
+  "options": { "planStartDate": "2026-01-05" },
+  "expect": {
+    "stripped_exercises": ["romanian_deadlift"],
+    "surviving_refs": [],
+    "diagnostic_codes": []
+  }
+}

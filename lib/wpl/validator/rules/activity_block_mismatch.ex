@@ -36,8 +36,7 @@ defmodule WPL.Validator.Rules.ActivityBlockMismatch do
         target_path: path,
         parent_name: if(is_binary(activity_name), do: activity_name, else: nil),
         allowed_values: allowed,
-        expected_shape:
-          "activity.type must be one of: #{allowed_str} (block type: #{block_type})"
+        expected_shape: "activity.type must be one of: #{allowed_str} (block type: #{block_type})"
       }
 
       WalkContext.emit(ctx, %Error{

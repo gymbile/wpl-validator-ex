@@ -16,6 +16,7 @@ defmodule WPL.Validator.Error do
           :schema_violation
           | :duplicate_id
           | :unresolved_ref
+          | :catalog_required
           | :empty_phases_for_type
           | :invalid_prescription
           | :invalid_personalization_rule

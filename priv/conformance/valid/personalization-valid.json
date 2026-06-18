@@ -28,7 +28,7 @@
           "id": "rule_senior_intensity",
           "condition": { "field": "age", "op": "gte", "value": 60 },
           "actions": [
-            { "type": "modify_intensity", "scope": "plan", "delta_percent": -10 },
+            { "type": "modify_intensity", "scope": "plan", "factor": 0.85 },
             { "type": "increase_rest", "scope": "plan", "extra_seconds": 30 }
           ]
         },

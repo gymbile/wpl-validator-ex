@@ -1,0 +1,44 @@
+{
+  "description": "compound plural match: 'Push Ups' (exercise_ref push_ups) is stripped by a rule forbidding 'push_up' — the _ups family is now stemmed via SHORT_PLURALS",
+  "plan": {
+    "version": "1.7.0",
+    "plan": {
+      "phases": [
+        {
+          "weeks": [
+            {
+              "order": 1,
+              "days": [
+                {
+                  "day_of_week": 1,
+                  "blocks": [
+                    {
+                      "type": "main",
+                      "activities": [
+                        { "type": "exercise", "name": "Push Ups" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "context": { "injuries": ["shoulder_impingement"] },
+  "rules": [
+    {
+      "id": "forbid_push_up",
+      "condition": { "field": "injuries", "op": "contains", "value": "shoulder_impingement" },
+      "actions": [{ "type": "forbid_exercise", "exercise": "push_up" }]
+    }
+  ],
+  "options": {},
+  "expect": {
+    "stripped_exercises": ["Push Ups"],
+    "surviving_refs": [],
+    "diagnostic_codes": []
+  }
+}

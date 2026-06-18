@@ -23,7 +23,7 @@ defmodule WPL.Validator do
 
   alias WPL.Validator.{Pass1, Pass2, Result}
 
-  @type opts :: [catalog: catalog()]
+  @type opts :: [catalog: catalog(), require_catalog: boolean()]
   @type catalog :: %{
           optional(:exercises) => MapSet.t(String.t()),
           optional(:meals) => MapSet.t(String.t()),
