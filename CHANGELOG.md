@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-06-18
+
+### Added
+- **Matcher vocabulary SSOT**: `WPL.Enforce.MatcherVocab` (qualifier_tokens/short_plurals) is
+  generated from a vendored `wpl/data/matcher-vocab.json`; `WPL.Enforce.Matcher` sources its
+  vocab from it; adds matcher-vocab drift-check. Matcher logic unchanged.
+
 ## [1.8.0] — 2026-06-17
 
 ### Added
