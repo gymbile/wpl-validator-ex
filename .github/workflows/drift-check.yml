@@ -3,6 +3,7 @@ name: Schema drift check
 on:
   schedule:
     - cron: '0 14 * * 1'
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -38,3 +39,40 @@ jobs:
             fi
           done
           [ "$drifted" = 1 ] && exit 1 || exit 0
+
+  vocab-vendored-matches-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve latest gymbile/wpl tag
+        id: tag
+        run: |
+          latest=$(git ls-remote --tags https://github.com/gymbile/wpl.git \
+                  | grep 'refs/tags/v' | grep -v '\^{}' \
+                  | sort -V | tail -1 | awk '{print $2}' | sed 's|refs/tags/||')
+          echo "latest=$latest" >> $GITHUB_OUTPUT
+      - name: Diff vendored matcher-vocab.json against upstream
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/gymbile/wpl/${{ steps.tag.outputs.latest }}/data/matcher-vocab.json" -o /tmp/upstream-vocab.json
+          if ! diff -q priv/data/matcher-vocab.json /tmp/upstream-vocab.json > /dev/null; then
+            echo "::error::Vendored matcher-vocab.json drifted from gymbile/wpl@${{ steps.tag.outputs.latest }}."
+            exit 1
+          fi
+
+  vocab-codegen-no-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.17'
+          otp-version: '26'
+      - run: mix deps.get
+      - run: mix run scripts/gen_matcher_vocab.exs
+      - name: Fail if generated vocab drifted
+        run: |
+          if ! git diff --quiet -- lib/wpl/enforce/matcher_vocab.ex; then
+            echo "::error::matcher_vocab.ex is out of date — regenerate and commit."
+            git --no-pager diff -- lib/wpl/enforce/matcher_vocab.ex
+            exit 1
+          fi
