@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.10.0] — 2026-07-07
+
+### Added
+- **Soft-validation vocabulary warnings** (Elixir parity of `@gymbile/wpl-validator` PR #7):
+  - `GOAL_CATEGORY_OFF_VOCAB` (`:warning`) — warns for each plan goal whose `category`
+    is not in the recommended `data/goal-categories.json` vocabulary AND is not `"custom"`.
+  - `DIETARY_TAGS_OFF_VOCAB` (`:warning`) — warns for each `nutrition` activity
+    `dietary_tags` entry not in the recommended `data/dietary-tags.json` vocabulary.
+    Activities without `dietary_tags` are silently skipped.
+  - Both rules are pass-2 semantic warnings; they do NOT affect plan validity.
+- **Vendored vocabularies**: `priv/data/goal-categories.json` and `priv/data/dietary-tags.json`
+  (from `gymbile/wpl@v1.9.0`) with corresponding `*-version.txt` pins.
+- **Generated data modules**: `WPL.Data.GoalCategories.ids/0` and `WPL.Data.DietaryTags.ids/0`
+  (compile-time lists via `scripts/gen_goal_categories.exs` / `scripts/gen_dietary_tags.exs`).
+- **Schema update**: vendored `priv/schema/v1.schema.json` bumped to WPL v1.9.0 (adds optional
+  `NutritionActivity.dietary_tags` field; fully backwards-compatible).
+
 ## [1.9.0] — 2026-06-18
 
 ### Added
