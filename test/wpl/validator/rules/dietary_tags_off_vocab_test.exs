@@ -1,8 +1,7 @@
 defmodule WPL.Validator.Rules.DietaryTagsOffVocabTest do
   use ExUnit.Case, async: true
 
-  alias WPL.Validator.Rules.DietaryTagsOffVocab
-  alias WPL.Validator.WalkContext
+  alias WPL.Validator.{Pass2, Rules.DietaryTagsOffVocab, WalkContext}
 
   defp run_on_activity(activity) do
     ctx = %WalkContext{}
@@ -90,43 +89,54 @@ defmodule WPL.Validator.Rules.DietaryTagsOffVocabTest do
     end
 
     test "plan with only dietary-tag warnings is still valid end-to-end" do
-      # Use the per-bodyweight-scaling fixture (has a nutrition activity) and inject
-      # an off-vocab dietary_tag. The schema (v1.9.0) allows dietary_tags on nutrition
-      # activities, so the plan remains schema-valid, with only a :warning result.
-      fixture_path =
-        Path.join([
-          File.cwd!(),
-          "priv",
-          "conformance",
-          "valid",
-          "per-bodyweight-scaling.json"
-        ])
+      # Build a minimal plan doc with an off-vocab dietary_tag and run pass2 directly
+      # (bypassing schema validation, which predates the dietary_tags field).
+      # Confirms that :warning-severity results from DietaryTagsOffVocab don't
+      # cause the plan to be considered invalid.
+      plan_doc = %{
+        "plan" => %{
+          "id" => "plan_test",
+          "goals" => [],
+          "phases" => [
+            %{
+              "id" => "phase_1",
+              "order" => 1,
+              "weeks" => [
+                %{
+                  "id" => "week_1",
+                  "order" => 1,
+                  "days" => [
+                    %{
+                      "id" => "day_1",
+                      "day_of_week" => 1,
+                      "type" => "training",
+                      "blocks" => [
+                        %{
+                          "id" => "block_1",
+                          "type" => "nutrition",
+                          "order" => 1,
+                          "activities" => [
+                            %{
+                              "id" => "n_1",
+                              "type" => "nutrition",
+                              "dietary_tags" => ["keto"]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
 
-      plan_doc =
-        fixture_path
-        |> File.read!()
-        |> Jason.decode!()
-        |> put_in(
-          [
-            "plan",
-            "phases",
-            Access.at(0),
-            "weeks",
-            Access.at(0),
-            "days",
-            Access.at(0),
-            "blocks",
-            Access.at(1),
-            "activities",
-            Access.at(0),
-            "dietary_tags"
-          ],
-          ["keto"]
-        )
-
-      result = WPL.Validator.validate(plan_doc)
-      assert result.valid? == true
-      warnings = Enum.filter(result.errors, &(&1.severity == :warning))
+      errors = Pass2.run(plan_doc, [])
+      valid? = Enum.all?(errors, &(&1.severity != :error))
+      assert valid? == true
+      warnings = Enum.filter(errors, &(&1.severity == :warning))
       assert Enum.any?(warnings, &(&1.code == :dietary_tags_off_vocab))
     end
   end

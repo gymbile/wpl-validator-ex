@@ -10,7 +10,7 @@ defmodule WPL.Data.DietaryTagsCodegenTest do
     before = File.read!(path)
 
     {_, 0} =
-      System.cmd("mix", ["run", "--no-start", "scripts/gen_dietary_tags.exs"],
+      System.cmd("mix", ["run", "scripts/gen_dietary_tags.exs"],
         cd: @root,
         stderr_to_stdout: true
       )

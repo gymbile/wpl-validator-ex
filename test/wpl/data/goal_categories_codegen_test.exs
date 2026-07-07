@@ -10,7 +10,7 @@ defmodule WPL.Data.GoalCategoriesCodegenTest do
     before = File.read!(path)
 
     {_, 0} =
-      System.cmd("mix", ["run", "--no-start", "scripts/gen_goal_categories.exs"],
+      System.cmd("mix", ["run", "scripts/gen_goal_categories.exs"],
         cd: @root,
         stderr_to_stdout: true
       )
