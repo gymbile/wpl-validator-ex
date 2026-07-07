@@ -16,13 +16,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - `DIETARY_TAGS_OFF_VOCAB` (`:warning`) — warns for each `nutrition` activity
     `dietary_tags` entry not in the recommended `data/dietary-tags.json` vocabulary.
     Activities without `dietary_tags` are silently skipped.
-  - Both rules are pass-2 semantic warnings; they do NOT affect plan validity.
+  - Both rules are pass-2 semantic warnings; they do NOT affect plan validity; now active
+    end-to-end with `dietary_tags` field supported by the v1.9.0 schema.
+  - `valid/goal-general-fitness-and-dietary-tags.json` conformance fixture exercises both.
 - **Vendored vocabularies**: `priv/data/goal-categories.json` and `priv/data/dietary-tags.json`
   (from `gymbile/wpl@v1.9.0`) with corresponding `*-version.txt` pins.
 - **Generated data modules**: `WPL.Data.GoalCategories.ids/0` and `WPL.Data.DietaryTags.ids/0`
   (compile-time lists via `scripts/gen_goal_categories.exs` / `scripts/gen_dietary_tags.exs`).
-- **Schema update**: vendored `priv/schema/v1.schema.json` bumped to WPL v1.9.0 (adds optional
-  `NutritionActivity.dietary_tags` field; fully backwards-compatible).
+
+### Changed
+- **WPL v1.9.0 vendor sync**: `priv/schema/v1.schema.json` and the entire `priv/conformance/`
+  tree (valid/, invalid/, README.md, error-codes.md) updated to match `gymbile/wpl@v1.9.0`
+  byte-for-byte. New conformance fixtures: `valid/goal-general-fitness-and-dietary-tags.json`,
+  `valid/personalization-forbid-exercise.json`, `valid/personalization-nested-compound.json`,
+  `invalid/action-unknown-type.json`.
+- **`DUPLICATE_ID` scope format**: meta `scope` field now uses the narrowest container
+  (e.g. `"day:day_1"` for blocks/activities, `"phase:phase_1"` for weeks) matching the
+  canonical conformance contract. Previously emitted the full path `"phase:P/week:W/day:D"`.
+- **Pass-1 OneOf expansion**: tied branches (equal error count) now emit errors from all
+  tied branches, ensuring the conformance check can match whichever branch the expected
+  fixture targets. Nested OneOf failures surface as `additionalProperties` at the containing
+  field path, matching ajv parity.
+- **Personalization action schema/semantic split**: Pass2 semantic validation
+  (`INVALID_PERSONALIZATION_RULE`) now runs for actions that carry a `scope` field even
+  when the v1.9.0 schema's action enums fail at schema level. Bare type-only actions without
+  a `scope` field are caught by schema alone (`SCHEMA_VIOLATION`). This preserves both the
+  legacy `INVALID_PERSONALIZATION_RULE` conformance contract and the new `action-unknown-type`
+  `SCHEMA_VIOLATION` fixture.
+- **Enforcement fixtures moved**: `priv/conformance/enforcement/` relocated to `priv/enforcement/`
+  so the schema drift-check loop does not compare them against upstream (they are not part of
+  `gymbile/wpl` conformance).
+- **CI step order fix**: `mix compile --warnings-as-errors` now runs before `mix test` to
+  avoid "redefining module" warnings on Elixir 1.15/1.16 where `mix test` and a subsequent
+  `mix compile` in the same job could trigger spurious redefinition warnings via the BEAM
+  module consolidation step.
 
 ## [1.9.0] — 2026-06-18
 
