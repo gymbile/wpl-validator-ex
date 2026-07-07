@@ -3,7 +3,7 @@ defmodule WPL.Enforce.ConformanceTest do
 
   alias WPL.Enforce
 
-  @enforcement_dir Application.app_dir(:wpl_validator, "priv/conformance/enforcement")
+  @enforcement_dir Application.app_dir(:wpl_validator, "priv/enforcement")
 
   # Each fixture JSON has:
   #   "plan"    — the compiled WPL JSON

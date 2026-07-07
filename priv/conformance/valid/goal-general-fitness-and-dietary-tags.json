@@ -1,25 +1,21 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.6.0",
+  "version": "1.9.0",
   "plan": {
-    "id": "plan_nutrition_only",
-    "name": "Daily Macro Targets",
-    "description": "Pure nutrition plan \u2014 protein/carbs/fat windows for one week.",
+    "id": "plan_general_fitness_dietary",
+    "name": "General Fitness with Vegan Nutrition",
     "type": "nutrition",
     "visibility": "template",
     "metadata": {
-      "tags": [
-        "nutrition",
-        "macros"
-      ],
+      "tags": ["nutrition", "general_fitness"],
       "language": "en"
     },
     "goals": [
       {
-        "id": "goal_protein",
+        "id": "goal_general",
         "type": "primary",
-        "category": "nutrition",
-        "name": "Hit daily protein"
+        "category": "general_fitness",
+        "name": "Stay generally fit"
       }
     ],
     "phases": [
@@ -53,25 +49,7 @@
                         "type": "nutrition",
                         "category": "meal",
                         "name": "Breakfast",
-                        "prescription": {
-                          "macros": {
-                            "protein": {
-                              "min": 25,
-                              "max": 40,
-                              "unit": "g"
-                            },
-                            "carbs": {
-                              "min": 40,
-                              "max": 70,
-                              "unit": "g"
-                            },
-                            "fat": {
-                              "min": 10,
-                              "max": 20,
-                              "unit": "g"
-                            }
-                          }
-                        }
+                        "dietary_tags": ["vegan"]
                       }
                     ]
                   }

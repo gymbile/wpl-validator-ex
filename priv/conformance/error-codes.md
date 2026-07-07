@@ -69,15 +69,13 @@ A `*_ref` value (e.g. `exercise_ref`, `meal_ref`) does not exist in the provided
 
 ### `CATALOG_REQUIRED`
 
-Emitted only when `require_catalog: true` is passed to `validate/2` and no catalog
-is supplied, but an activity references a `*_ref` field. In non-strict mode (the
-default) a missing catalog silently skips ref resolution.
+Emitted at each unresolvable ref path when validation runs in strict catalog mode (`requireCatalog: true`) and no catalog was supplied while the plan contains at least one `exercise_ref` / `meal_ref` / `meditation_ref`. Strict mode is the production posture for safety-governed deployments: entity resolution must not silently no-op. **Skipped entirely when `requireCatalog` is absent or `false` (backward-compatible default).**
 
 - **severity**: `error`
-- **path**: pointer to the activity's `*_ref` field
+- **path**: pointer to the activity's `*_ref` field (e.g. `/plan/phases/0/weeks/0/days/0/blocks/0/activities/0/exercise_ref`) — same path convention as `UNRESOLVED_REF`
 - **meta**:
-  - `ref_kind` (string) — `exercise` | `meal` | `meditation`
-  - `ref_value` (string) — the ref that could not be checked
+  - `ref_kind` (string) — the kind of the unresolvable ref (`exercise` | `meal` | `meditation` | etc.)
+  - `ref_value` (string) — the id value of the unresolvable ref
 
 ### `CYCLIC_SUBPLAN`
 
@@ -141,6 +139,31 @@ Points-system rule has missing/invalid points value.
 - **path**: pointer to the points rule
 - **meta**:
   - `reason` (string) — `missing_action` | `missing_points` | `points_must_be_non_negative_integer`
+
+### `ACTIVITY_BLOCK_MISMATCH`
+
+An activity's `type` is not permitted inside the parent block's `type`. JSON Schema cannot enforce this constraint because `Block.activities` is an open `oneOf` over all activity types.
+
+- **severity**: `error`
+- **path**: pointer to the offending activity
+- **meta**:
+  - `activity_type` (string) — the rejected activity type
+  - `block_type` (string) — the containing block's type
+  - `allowed` (array of strings) — the full allowed-activity list for that block type
+
+#### Allowed activity types per block type
+
+| Block type  | Allowed activity types |
+|-------------|------------------------|
+| `warmup`    | `exercise`, `cardio`, `recovery`, `simple`, `sub_plan` |
+| `main`      | `exercise`, `cardio`, `nutrition`, `meditation`, `recovery`, `habit`, `simple`, `sub_plan` |
+| `cooldown`  | `exercise`, `cardio`, `recovery`, `meditation`, `simple`, `sub_plan` |
+| `nutrition` | `nutrition`, `simple`, `sub_plan` |
+| `meditation`| `meditation`, `simple`, `sub_plan` |
+| `education` | `simple`, `habit`, `sub_plan` |
+| `assessment`| `exercise`, `cardio`, `simple`, `sub_plan` |
+
+`simple` and `sub_plan` are intentionally permitted in every block type as escape hatches. Unknown block types (not in the table above) are not checked.
 
 ### `PHASE_DURATION_MISMATCH`
 

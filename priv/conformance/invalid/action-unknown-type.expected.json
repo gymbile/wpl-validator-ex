@@ -1,7 +1,7 @@
 [
   {
     "code": "SCHEMA_VIOLATION",
-    "path": "/plan/progress/checkpoints/0/measurements/0/questionnaire",
+    "path": "/plan/personalization/rules/0/actions/0/type",
     "severity": "error",
     "meta": {
       "keyword": "enum"

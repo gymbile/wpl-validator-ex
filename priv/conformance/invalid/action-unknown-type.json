@@ -1,21 +1,45 @@
 {
   "$schema": "https://wpl.dev/schemas/wpl/v1.schema.json",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "plan": {
-    "id": "22222222-2222-4222-8222-222222222222",
-    "name": "Duplicate Week ID",
+    "id": "plan_unknown_action_type",
+    "name": "Unknown action type",
     "type": "workout",
     "visibility": "private",
     "metadata": {},
     "goals": [],
     "requirements": {},
+    "personalization": {
+      "inputs": [
+        {
+          "id": "age",
+          "type": "number",
+          "source": "user.age"
+        }
+      ],
+      "rules": [
+        {
+          "id": "rule_1",
+          "condition": {
+            "field": "age",
+            "op": "gt",
+            "value": 60
+          },
+          "actions": [
+            {
+              "type": "frobnicate_exercise"
+            }
+          ]
+        }
+      ]
+    },
     "phases": [
       {
         "id": "phase_1",
-        "name": "Phase 1",
+        "name": "P1",
         "order": 1,
         "duration": {
-          "value": 2,
+          "value": 1,
           "unit": "weeks"
         },
         "weeks": [
@@ -25,22 +49,9 @@
             "order": 1,
             "days": [
               {
-                "id": "d1",
+                "id": "day_1",
                 "day_of_week": 1,
                 "name": "D1",
-                "type": "rest"
-              }
-            ]
-          },
-          {
-            "id": "week_1",
-            "name": "Week 1 again",
-            "order": 2,
-            "days": [
-              {
-                "id": "d2",
-                "day_of_week": 1,
-                "name": "D2",
                 "type": "rest"
               }
             ]

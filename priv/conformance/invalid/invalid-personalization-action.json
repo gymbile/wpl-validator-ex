@@ -11,24 +11,52 @@
     "requirements": {},
     "personalization": {
       "inputs": [
-        { "id": "age", "type": "number", "source": "user.age" }
+        {
+          "id": "age",
+          "type": "number",
+          "source": "user.age"
+        }
       ],
       "rules": [
         {
           "id": "rule_1",
-          "condition": { "field": "age", "op": "gt", "value": 60 },
+          "condition": {
+            "field": "age",
+            "op": "gt",
+            "value": 60
+          },
           "actions": [
-            { "type": "set_world_on_fire", "scope": "plan" }
+            {
+              "type": "set_world_on_fire",
+              "scope": "plan"
+            }
           ]
         }
       ]
     },
     "phases": [
       {
-        "id": "phase_1", "name": "P1", "order": 1,
-        "duration": { "value": 1, "unit": "weeks" },
+        "id": "phase_1",
+        "name": "P1",
+        "order": 1,
+        "duration": {
+          "value": 1,
+          "unit": "weeks"
+        },
         "weeks": [
-          { "id": "week_1", "name": "Week 1", "order": 1, "days": [{ "id": "day_1", "day_of_week": 1, "name": "D1", "type": "rest" }] }
+          {
+            "id": "week_1",
+            "name": "Week 1",
+            "order": 1,
+            "days": [
+              {
+                "id": "day_1",
+                "day_of_week": 1,
+                "name": "D1",
+                "type": "rest"
+              }
+            ]
+          }
         ]
       }
     ]
