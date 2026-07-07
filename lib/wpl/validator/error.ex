@@ -24,6 +24,8 @@ defmodule WPL.Validator.Error do
           | :phase_duration_mismatch
           | :cyclic_subplan
           | :activity_block_mismatch
+          | :goal_category_off_vocab
+          | :dietary_tags_off_vocab
 
   @type severity :: :error | :warning
 

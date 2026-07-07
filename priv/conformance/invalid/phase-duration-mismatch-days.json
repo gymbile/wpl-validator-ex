@@ -13,12 +13,22 @@
         "id": "phase_1",
         "name": "P1",
         "order": 1,
-        "duration": { "value": 21, "unit": "days" },
+        "duration": {
+          "value": 21,
+          "unit": "days"
+        },
         "weeks": [
           {
-            "id": "week_1", "name": "Week 1", "order": 1,
+            "id": "week_1",
+            "name": "Week 1",
+            "order": 1,
             "days": [
-              { "id": "d1", "day_of_week": 1, "name": "D1", "type": "rest" }
+              {
+                "id": "d1",
+                "day_of_week": 1,
+                "name": "D1",
+                "type": "rest"
+              }
             ]
           }
         ]

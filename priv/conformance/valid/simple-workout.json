@@ -8,7 +8,11 @@
     "type": "workout",
     "visibility": "public",
     "metadata": {
-      "tags": ["beginner", "upper_body", "strength"],
+      "tags": [
+        "beginner",
+        "upper_body",
+        "strength"
+      ],
       "difficulty": "beginner",
       "estimated_duration_days": 1,
       "language": "en"
@@ -50,7 +54,10 @@
                         "name": "Arm Circles",
                         "category": "mobility",
                         "prescription": {
-                          "duration": { "value": 30, "unit": "seconds" }
+                          "duration": {
+                            "value": 30,
+                            "unit": "seconds"
+                          }
                         }
                       }
                     ]
@@ -69,8 +76,14 @@
                         "prescription": {
                           "type": "sets_reps",
                           "sets": 3,
-                          "reps": { "min": 8, "max": 12 },
-                          "rest": { "value": 60, "unit": "seconds" }
+                          "reps": {
+                            "min": 8,
+                            "max": 12
+                          },
+                          "rest": {
+                            "value": 60,
+                            "unit": "seconds"
+                          }
                         }
                       },
                       {
@@ -81,9 +94,19 @@
                         "prescription": {
                           "type": "sets_reps",
                           "sets": 3,
-                          "reps": { "min": 10, "max": 12 },
-                          "weight": { "type": "absolute", "value": 10, "unit": "kg" },
-                          "rest": { "value": 60, "unit": "seconds" }
+                          "reps": {
+                            "min": 10,
+                            "max": 12
+                          },
+                          "weight": {
+                            "type": "absolute",
+                            "value": 10,
+                            "unit": "kg"
+                          },
+                          "rest": {
+                            "value": 60,
+                            "unit": "seconds"
+                          }
                         }
                       },
                       {
@@ -94,9 +117,19 @@
                         "prescription": {
                           "type": "sets_reps",
                           "sets": 3,
-                          "reps": { "min": 8, "max": 10 },
-                          "weight": { "type": "absolute", "value": 8, "unit": "kg" },
-                          "rest": { "value": 90, "unit": "seconds" }
+                          "reps": {
+                            "min": 8,
+                            "max": 10
+                          },
+                          "weight": {
+                            "type": "absolute",
+                            "value": 8,
+                            "unit": "kg"
+                          },
+                          "rest": {
+                            "value": 90,
+                            "unit": "seconds"
+                          }
                         }
                       }
                     ]
@@ -112,7 +145,10 @@
                         "category": "stretching",
                         "name": "Chest & Shoulder Stretch",
                         "prescription": {
-                          "duration": { "value": 2, "unit": "minutes" }
+                          "duration": {
+                            "value": 2,
+                            "unit": "minutes"
+                          }
                         }
                       }
                     ]

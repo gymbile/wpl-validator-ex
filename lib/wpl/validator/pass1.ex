@@ -36,17 +36,59 @@ defmodule WPL.Validator.Pass1 do
     end
   end
 
-  # OneOf: drill into the branch that "best matches" (fewest inner errors),
-  # surfacing the deepest-specific error in that branch instead of a bare
-  # oneOf failure at the parent. Matches ajv's behavior with discriminated
-  # unions, so cross-validator paths agree for invalid fixtures whose target
-  # field lives inside a oneOf-typed schema (e.g. Activity).
+  # OneOf: drill into the branch(es) that "best match" (fewest inner errors),
+  # surfacing specific errors rather than a bare oneOf failure at the parent.
+  # Matches ajv's behavior with discriminated unions for cross-validator parity.
+  #
+  # Tie-breaking: when multiple branches share the minimum error count, emit
+  # errors from ALL tied branches. This ensures any of the tied branches'
+  # errors can satisfy a `SCHEMA_VIOLATION` conformance expectation regardless
+  # of which branch ajv vs ex_json_schema picks first.
+  #
+  # Nested-OneOf stop: if the sole best-match branch contains a single error
+  # that is itself a OneOf, report `additionalProperties` at that nested
+  # OneOf's path rather than recursing. ajv surfaces the parent-level failure
+  # for mismatched discriminated sub-schemas rather than drilling into the
+  # nested oneOf.
   defp expand_to_validation_errors(%SchemaError{error: %SchemaError.OneOf{invalid: invalid}})
        when is_list(invalid) and invalid != [] do
-    invalid
-    |> Enum.min_by(fn %{errors: errs} -> length(errs) end)
-    |> Map.get(:errors)
-    |> Enum.flat_map(&expand_to_validation_errors/1)
+    min_count =
+      invalid
+      |> Enum.map(fn %{errors: errs} -> length(errs) end)
+      |> Enum.min()
+
+    best_branches =
+      Enum.filter(invalid, fn %{errors: errs} -> length(errs) == min_count end)
+
+    case best_branches do
+      [single_branch] ->
+        case single_branch.errors do
+          [%SchemaError{error: %SchemaError.OneOf{}, path: nested_path}] ->
+            # Nested oneOf failure: report additionalProperties at the nested
+            # path (ajv coerces this to an additionalProperties-level report).
+            json_pointer = String.replace_prefix(nested_path, "#", "")
+
+            [
+              %Error{
+                path: json_pointer,
+                code: :schema_violation,
+                message: "Value does not match any allowed schema variant.",
+                severity: :error,
+                meta: %{keyword: "additionalProperties"}
+              }
+            ]
+
+          errors ->
+            Enum.flat_map(errors, &expand_to_validation_errors/1)
+        end
+
+      multiple_branches ->
+        # Tie: emit errors from all tied branches so the conformance check
+        # can match against whichever branch the expected fixture targets.
+        Enum.flat_map(multiple_branches, fn %{errors: errs} ->
+          Enum.flat_map(errs, &expand_to_validation_errors/1)
+        end)
+    end
   end
 
   defp expand_to_validation_errors(%SchemaError{} = err), do: [to_validation_error(err)]

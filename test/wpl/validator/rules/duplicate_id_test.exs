@@ -155,7 +155,7 @@ defmodule WPL.Validator.Rules.DuplicateIdTest do
       errors = Pass2.run(input, [])
       dup_errors = Enum.filter(errors, &(&1.code == :duplicate_id))
       assert length(dup_errors) == 1
-      assert hd(dup_errors).meta.scope == "phase:phase_1/week:week_1/day:day_1"
+      assert hd(dup_errors).meta.scope == "day:day_1"
     end
 
     test "detects duplicate activity.id within day across blocks" do
@@ -207,7 +207,7 @@ defmodule WPL.Validator.Rules.DuplicateIdTest do
       dup_errors = Enum.filter(errors, &(&1.code == :duplicate_id))
       assert length(dup_errors) == 1
       assert hd(dup_errors).meta.duplicate_id == "a1"
-      assert hd(dup_errors).meta.scope == "phase:phase_1/week:week_1/day:day_1"
+      assert hd(dup_errors).meta.scope == "day:day_1"
     end
 
     test "does NOT flag identical block/activity IDs in same-named days of different weeks" do

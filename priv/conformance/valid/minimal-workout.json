@@ -19,7 +19,12 @@
             "name": "Week 1",
             "order": 1,
             "days": [
-              { "id": "day_1", "day_of_week": 1, "name": "D1", "type": "rest" }
+              {
+                "id": "day_1",
+                "day_of_week": 1,
+                "name": "D1",
+                "type": "rest"
+              }
             ]
           }
         ]

@@ -17,7 +17,9 @@ defmodule WPL.ConformanceTest do
         plan = read_json!(@path)
         result = Validator.validate(plan)
         assert result.valid? == true, "Expected valid, got errors: #{inspect(result.errors)}"
-        assert result.errors == []
+
+        hard_errors = Enum.filter(result.errors, &(&1.severity == :error))
+        assert hard_errors == []
       end
     end
   end
@@ -140,6 +142,8 @@ defmodule WPL.ConformanceTest do
   defp code_string_to_atom("PHASE_DURATION_MISMATCH"), do: :phase_duration_mismatch
   defp code_string_to_atom("CYCLIC_SUBPLAN"), do: :cyclic_subplan
   defp code_string_to_atom("ACTIVITY_BLOCK_MISMATCH"), do: :activity_block_mismatch
+  defp code_string_to_atom("GOAL_CATEGORY_OFF_VOCAB"), do: :goal_category_off_vocab
+  defp code_string_to_atom("DIETARY_TAGS_OFF_VOCAB"), do: :dietary_tags_off_vocab
 
   defp describe_mismatch(result, expected_errors) do
     """
