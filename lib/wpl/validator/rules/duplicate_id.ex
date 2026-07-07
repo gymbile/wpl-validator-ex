@@ -45,16 +45,16 @@ defmodule WPL.Validator.Rules.DuplicateId do
     # (phase, week, day) so structurally-correct multi-week plans do not
     # falsely report `:duplicate_id` for the same block ID (e.g.
     # `warmup_block`) appearing once per day across weeks.
+    day_id = WalkContext.get_scope(ctx, :cur_day, "")
     scope_key = scope_key_for("block", ctx)
-    scope_label = scope_label(ctx)
-    check(ctx, scope_key, scope_label, Map.get(block, "id"), path)
+    check(ctx, scope_key, "day:#{day_id}", Map.get(block, "id"), path)
   end
 
   @impl true
   def enter_activity(ctx, activity, path) do
+    day_id = WalkContext.get_scope(ctx, :cur_day, "")
     scope_key = scope_key_for("activity", ctx)
-    scope_label = scope_label(ctx)
-    check(ctx, scope_key, scope_label, Map.get(activity, "id"), path)
+    check(ctx, scope_key, "day:#{day_id}", Map.get(activity, "id"), path)
   end
 
   defp scope_key_for(kind, ctx) do
@@ -62,13 +62,6 @@ defmodule WPL.Validator.Rules.DuplicateId do
     week_id = WalkContext.get_scope(ctx, :cur_week, "")
     day_id = WalkContext.get_scope(ctx, :cur_day, "")
     {:dup_seen, "#{kind}:#{phase_id}:#{week_id}:#{day_id}"}
-  end
-
-  defp scope_label(ctx) do
-    phase_id = WalkContext.get_scope(ctx, :cur_phase, "")
-    week_id = WalkContext.get_scope(ctx, :cur_week, "")
-    day_id = WalkContext.get_scope(ctx, :cur_day, "")
-    "phase:#{phase_id}/week:#{week_id}/day:#{day_id}"
   end
 
   # -----------------------------------------------------------------------
