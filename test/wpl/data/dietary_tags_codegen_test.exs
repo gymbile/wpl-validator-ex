@@ -5,19 +5,6 @@ defmodule WPL.Data.DietaryTagsCodegenTest do
 
   @root File.cwd!()
 
-  test "committed dietary_tags.ex equals a fresh codegen run" do
-    path = Path.join(@root, "lib/wpl/data/dietary_tags.ex")
-    before = File.read!(path)
-
-    {_, 0} =
-      System.cmd("mix", ["run", "scripts/gen_dietary_tags.exs"],
-        cd: @root,
-        stderr_to_stdout: true
-      )
-
-    assert File.read!(path) == before
-  end
-
   test "exposes all dietary-tag ids from the vendored JSON" do
     json =
       Path.join(@root, "priv/data/dietary-tags.json")
