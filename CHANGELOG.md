@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.10.2] — 2026-07-07
+
+### Changed
+- Harden codegen tests: drop fragile nested `mix run` that broke the Hex publish job.
+  The no-drift guarantee is already enforced by the CI `vocab-codegen-no-diff` job; the
+  in-process assertions (module data == vendored JSON) remain.
+
 ## [1.10.1] — 2026-07-07
 
 ### Changed
