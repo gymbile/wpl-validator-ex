@@ -17,7 +17,7 @@ defmodule WPL.Validator.Rules.GoalCategoryOffVocabTest do
 
     test "all known categories emit no warnings" do
       goals =
-        ~w(weight_loss muscle_gain endurance strength flexibility mental_wellness nutrition habit general_fitness)
+        ~w(weight_loss muscle_gain endurance strength flexibility mental_wellness nutrition habit recovery general_fitness)
         |> Enum.with_index(1)
         |> Enum.map(fn {cat, i} -> %{"id" => "g#{i}", "type" => "primary", "category" => cat} end)
 

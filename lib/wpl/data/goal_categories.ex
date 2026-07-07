@@ -2,7 +2,7 @@ defmodule WPL.Data.GoalCategories do
   @moduledoc """
   GENERATED — do not edit. Run `mix run scripts/gen_goal_categories.exs`.
   Source of truth: wpl/data/goal-categories.json (vendored at priv/data/goal-categories.json).
-  Vocab version: 1.0.0
+  Vocab version: 1.1.0
   """
 
   @ids [
@@ -14,6 +14,7 @@ defmodule WPL.Data.GoalCategories do
     "mental_wellness",
     "nutrition",
     "habit",
+    "recovery",
     "general_fitness",
     "custom"
   ]

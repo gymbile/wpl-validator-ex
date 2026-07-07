@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.10.1] — 2026-07-07
+
+### Changed
+- Re-vendor `data/goal-categories.json` from wpl v1.9.1 (vocab version 1.1.0): adds `recovery` category.
+  `GOAL_CATEGORY_OFF_VOCAB` no longer warns on `"recovery"`.
+
 ## [1.10.0] — 2026-07-07
 
 ### Added
