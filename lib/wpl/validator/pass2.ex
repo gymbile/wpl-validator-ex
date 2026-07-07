@@ -6,8 +6,10 @@ defmodule WPL.Validator.Pass2 do
   alias WPL.Validator.Rules.{
     ActivityBlockMismatch,
     CyclicSubplan,
+    DietaryTagsOffVocab,
     DuplicateId,
     EmptyPhasesForType,
+    GoalCategoryOffVocab,
     InvalidPersonalizationRule,
     InvalidPointsRule,
     InvalidPrescription,
@@ -18,8 +20,10 @@ defmodule WPL.Validator.Pass2 do
   @rules [
     ActivityBlockMismatch,
     CyclicSubplan,
+    DietaryTagsOffVocab,
     DuplicateId,
     EmptyPhasesForType,
+    GoalCategoryOffVocab,
     InvalidPersonalizationRule,
     InvalidPointsRule,
     InvalidPrescription,
