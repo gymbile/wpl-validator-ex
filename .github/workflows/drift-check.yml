@@ -44,15 +44,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Read vendored version
+      - name: Read vendored versions
         id: vendored
-        run: echo "version=$(cat priv/data/matcher-vocab-version.txt)" >> $GITHUB_OUTPUT
+        run: |
+          echo "matcher_version=$(cat priv/data/matcher-vocab-version.txt)" >> $GITHUB_OUTPUT
+          echo "goal_categories_version=$(cat priv/data/goal-categories-version.txt)" >> $GITHUB_OUTPUT
+          echo "dietary_tags_version=$(cat priv/data/dietary-tags-version.txt)" >> $GITHUB_OUTPUT
       - name: Diff vendored matcher-vocab.json against the upstream release it pins
         run: |
-          tag="v${{ steps.vendored.outputs.version }}"
+          tag="v${{ steps.vendored.outputs.matcher_version }}"
           curl -sSL "https://raw.githubusercontent.com/gymbile/wpl/${tag}/data/matcher-vocab.json" -o /tmp/upstream-vocab.json
           if ! diff -q priv/data/matcher-vocab.json /tmp/upstream-vocab.json > /dev/null; then
-            echo "::error::Vendored matcher-vocab.json drifted from gymbile/wpl@${tag} (vendored vocab version: ${{ steps.vendored.outputs.version }}). The vendored copy no longer matches the release it claims to track."
+            echo "::error::Vendored matcher-vocab.json drifted from gymbile/wpl@${tag} (vendored vocab version: ${{ steps.vendored.outputs.matcher_version }}). The vendored copy no longer matches the release it claims to track."
+            exit 1
+          fi
+      - name: Diff vendored goal-categories.json against the upstream release it pins
+        run: |
+          tag="v${{ steps.vendored.outputs.goal_categories_version }}"
+          curl -sSL "https://raw.githubusercontent.com/gymbile/wpl/${tag}/data/goal-categories.json" -o /tmp/upstream-goal-categories.json
+          if ! diff -q priv/data/goal-categories.json /tmp/upstream-goal-categories.json > /dev/null; then
+            echo "::error::Vendored goal-categories.json drifted from gymbile/wpl@${tag} (vendored version: ${{ steps.vendored.outputs.goal_categories_version }})."
+            exit 1
+          fi
+      - name: Diff vendored dietary-tags.json against the upstream release it pins
+        run: |
+          tag="v${{ steps.vendored.outputs.dietary_tags_version }}"
+          curl -sSL "https://raw.githubusercontent.com/gymbile/wpl/${tag}/data/dietary-tags.json" -o /tmp/upstream-dietary-tags.json
+          if ! diff -q priv/data/dietary-tags.json /tmp/upstream-dietary-tags.json > /dev/null; then
+            echo "::error::Vendored dietary-tags.json drifted from gymbile/wpl@${tag} (vendored version: ${{ steps.vendored.outputs.dietary_tags_version }})."
             exit 1
           fi
 
@@ -65,13 +84,16 @@ jobs:
           elixir-version: '1.17'
           otp-version: '26'
       - run: mix deps.get
-      # --no-start: the generator is pure file I/O (read JSON, write .ex) and must
-      # not boot the OTP app.
+      # --no-start: the generators are pure file I/O (read JSON, write .ex) and
+      # must not boot the OTP app.
       - run: mix run --no-start scripts/gen_matcher_vocab.exs
-      - name: Fail if generated vocab drifted
+      - run: mix run --no-start scripts/gen_goal_categories.exs
+      - run: mix run --no-start scripts/gen_dietary_tags.exs
+      - name: Fail if any generated vocab drifted
         run: |
-          if ! git diff --quiet -- lib/wpl/enforce/matcher_vocab.ex; then
-            echo "::error::matcher_vocab.ex is out of date — regenerate and commit."
-            git --no-pager diff -- lib/wpl/enforce/matcher_vocab.ex
+          changed=$(git diff --name-only -- lib/wpl/enforce/matcher_vocab.ex lib/wpl/data/goal_categories.ex lib/wpl/data/dietary_tags.ex)
+          if [ -n "$changed" ]; then
+            echo "::error::Generated vocab file(s) out of date — regenerate and commit: $changed"
+            git --no-pager diff -- lib/wpl/enforce/matcher_vocab.ex lib/wpl/data/goal_categories.ex lib/wpl/data/dietary_tags.ex
             exit 1
           fi
